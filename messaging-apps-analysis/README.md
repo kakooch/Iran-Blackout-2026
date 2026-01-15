@@ -24,13 +24,44 @@ This analysis documents the network architecture, video call protocols, and serv
 
 ---
 
-## Methodology
+## Documentation
 
-1. APK acquisition from official sources
-2. Static analysis via jadx/apktool decompilation
-3. Native library identification
-4. Server endpoint extraction from certificate pinning configs
-5. ASN/WHOIS infrastructure mapping
+| Document | Description |
+|----------|-------------|
+| [Bale Protocol Analysis](docs/bale-protocol.md) | LiveKit/WebRTC stack, server inventory, cert pinning |
+| [Eitaa Protocol Analysis](docs/eitaa-protocol.md) | Linphone/SIP stack, ASN details, TLS configuration |
+| [Infrastructure Mapping](docs/infrastructure.md) | Full AS topology, IP allocation, peering relationships |
+| [Reproduction Methodology](docs/methodology.md) | Step-by-step guide to reproduce this analysis |
+
+---
+
+## Reproduction
+
+To reproduce this analysis, see the full [Methodology Guide](docs/methodology.md).
+
+### Quick Start
+
+```bash
+# Install tools
+brew install jadx apktool    # macOS
+# apt install jadx apktool   # Linux
+
+# Download APKs
+curl -L -o bale.apk "https://bale.ai/apk/bale.apk"
+curl -L -o eitaa.apk "https://storage.apk.live/ir.eitaa.messenger--24571.apk"
+
+# Verify checksums
+echo "26786339f1844f0347f77954ecf1fc64ead6b50e2cd370471ad2a7960617a6c0  bale.apk" | shasum -a 256 -c
+echo "f9dcd28ddb923d85e44c7f9ef7dec011763a7985e23e877da34feda7d27994c9  eitaa.apk" | shasum -a 256 -c
+
+# Decompile
+jadx -d bale_java bale.apk
+jadx -d eitaa_java eitaa.apk
+
+# Search for protocols
+grep -r "livekit\|LiveKit" bale_java/sources/       # Bale: LiveKit
+grep -r "linphone\|Linphone" eitaa_java/sources/    # Eitaa: Linphone
+```
 
 ---
 
@@ -38,23 +69,22 @@ This analysis documents the network architecture, video call protocols, and serv
 
 ```
 messaging-apps-analysis/
-├── README.md                    # This file
+├── README.md                        # This file
 ├── docs/
-│   ├── bale-protocol.md         # Bale technical analysis
-│   ├── eitaa-protocol.md        # Eitaa technical analysis
-│   └── infrastructure.md        # Network infrastructure mapping
+│   ├── bale-protocol.md             # Bale technical analysis
+│   ├── eitaa-protocol.md            # Eitaa technical analysis
+│   ├── infrastructure.md            # Network infrastructure mapping
+│   └── methodology.md               # Reproduction instructions
 └── evidence/
-    ├── bale.apk                 # Original APK (58MB)
-    ├── eitaa.apk                # Original APK (37MB)
-    ├── checksums.txt            # SHA-256 verification hashes
-    └── native-libs.txt          # Extracted native library listing
+    ├── bale.apk                     # Original APK (58MB)
+    ├── eitaa.apk                    # Original APK (37MB)
+    ├── checksums.txt                # SHA-256 verification hashes
+    └── native-libs.txt              # Extracted native library listing
 ```
 
 ---
 
-## Quick Reference
-
-### Protocol Stack Comparison
+## Protocol Stack Comparison
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -78,7 +108,9 @@ messaging-apps-analysis/
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Infrastructure Overview
+---
+
+## Infrastructure Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -106,6 +138,8 @@ messaging-apps-analysis/
 └─────────────────────────────────────────────────────────────┘
 ```
 
+For complete infrastructure details, see [Infrastructure Mapping](docs/infrastructure.md).
+
 ---
 
 ## Implications
@@ -119,7 +153,15 @@ messaging-apps-analysis/
 
 ## Evidence Integrity
 
-All evidence files include SHA-256 checksums for verification. See `evidence/checksums.txt`.
+All evidence files include SHA-256 checksums for verification.
+
+```
+SHA-256 Checksums:
+26786339f1844f0347f77954ecf1fc64ead6b50e2cd370471ad2a7960617a6c0  bale.apk
+f9dcd28ddb923d85e44c7f9ef7dec011763a7985e23e877da34feda7d27994c9  eitaa.apk
+```
+
+See [evidence/checksums.txt](evidence/checksums.txt) for verification file.
 
 ---
 
