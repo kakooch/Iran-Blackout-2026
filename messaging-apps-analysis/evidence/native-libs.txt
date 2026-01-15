@@ -1,0 +1,67 @@
+# Native Library Inventory
+# Extracted via: apktool d <apk> -o <output>
+# Analysis Date: 2026-01-15
+
+================================================================================
+BALE MESSENGER (ir.nasim)
+================================================================================
+
+lib/arm64-v8a/
+--------------------------------------------------------------------------------
+liblkjingle_peerconnection_so.so    11,764,784 bytes   LiveKit WebRTC stack
+libtmessages.45.so                   5,808,320 bytes   Telegram-derived messaging
+libsentry.so                           704,344 bytes   Sentry error tracking
+libimage_processing_util_jni.so         29,008 bytes   Camera/image processing
+libsentry-android.so                    16,832 bytes   Sentry Android bindings
+libandroidx.graphics.path.so            10,096 bytes   AndroidX graphics
+libsurface_util_jni.so                   4,832 bytes   Surface utilities
+
+lib/armeabi-v7a/
+--------------------------------------------------------------------------------
+liblkjingle_peerconnection_so.so     6,655,648 bytes   LiveKit WebRTC stack
+libtmessages.45.so                   5,678,100 bytes   Telegram-derived messaging
+libsentry.so                           456,792 bytes   Sentry error tracking
+libimage_processing_util_jni.so         20,380 bytes   Camera/image processing
+libsentry-android.so                    12,080 bytes   Sentry Android bindings
+libandroidx.graphics.path.so             7,252 bytes   AndroidX graphics
+libsurface_util_jni.so                   3,440 bytes   Surface utilities
+
+
+================================================================================
+EITAA MESSENGER (ir.eitaa)
+================================================================================
+
+lib/arm64-v8a/
+--------------------------------------------------------------------------------
+libtmessages.40.so                  20,481,436 bytes   Telegram-derived messaging
+liblinphone.so                       8,058,844 bytes   Linphone SIP/VoIP core
+libmediastreamer.so                  2,112,248 bytes   Media processing/codecs
+libbctoolbox.so                        617,968 bytes   Belledonne Communications toolkit
+libc++_shared.so                       610,016 bytes   C++ standard library
+libmswebrtc.so                         270,052 bytes   WebRTC modules for Linphone
+libjsoncpp.so                          160,948 bytes   JSON parsing
+libortp.so                             151,184 bytes   RTP transport protocol
+libsrtp2.so                            151,076 bytes   SRTP encryption
+librtmp-jni.so                          63,004 bytes   RTMP streaming support
+libmsaaudio.so                          23,880 bytes   Android audio interface
+
+
+================================================================================
+ANALYSIS NOTES
+================================================================================
+
+BALE:
+- Primary call library: liblkjingle_peerconnection_so.so (LiveKit WebRTC)
+- LiveKit is a commercial WebRTC SFU platform
+- Telegram derivation evident in libtmessages naming
+
+EITAA:
+- Primary call library: liblinphone.so (SIP-based VoIP)
+- Full Linphone SDK stack present (mediastreamer, ortp, srtp2)
+- Significantly larger Telegram-derived component (20MB vs 5.8MB)
+- WebRTC modules (libmswebrtc.so) used within Linphone stack
+
+COMMON:
+- Both derived from Telegram source code
+- Both use centralized server architectures
+- Neither implements pure P2P calling
