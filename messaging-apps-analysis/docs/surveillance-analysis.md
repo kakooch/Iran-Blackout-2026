@@ -269,6 +269,54 @@ public class RootDetector {
 }
 ```
 
+### 6. DNS Query Telemetry (CRITICAL)
+
+Bale implements a "ConnectionHealthChecker" that reports which domains the app attempts to resolve to a Bale-controlled endpoint.
+
+**File:** `ir/nasim/C19596qd1.java`
+
+```java
+// Default endpoint (hardcoded)
+public C19596qd1(OkHttpClient okHttpClient, InterfaceC3570Bk5 interfaceC3570Bk5) {
+    this(Build.VERSION.SDK_INT, strR, okHttpClient,
+         "https://2.189.68.149:443/dnscheck",  // Bale server
+         interfaceC3570Bk5);
+}
+
+// Method f() - Send health check request
+public final void f(String domain, String requestTimeInMillis) {
+    Request request = new Request.Builder()
+        .addHeader("Content-Type", "application/json")
+        .addHeader("Host", "health.ble.ir")
+        .url(this.d)  // https://2.189.68.149:443/dnscheck
+        .post(createJsonBody(domain, apiVersion, appVersion, requestTime, sessionId))
+        .build();
+    this.c.newCall(request).enqueue(callback);
+}
+```
+
+**Data Collected:**
+
+| Field | Description |
+|-------|-------------|
+| `domain` | Hostname being resolved |
+| `api_version` | Android SDK version |
+| `app_version` | Bale app version |
+| `request_time` | Time taken for resolution (ms) |
+| `session_id` | Persistent session identifier |
+
+**Scope Clarification:**
+- ✅ Captures: Domains that Bale app resolves (API calls)
+- ❌ Does NOT capture: External links clicked in chat (uses system DNS)
+- ❌ Does NOT capture: Other apps' DNS queries (app-internal only)
+- ❌ Does NOT capture: System-wide DNS
+
+**VPN Implications:**
+- Telemetry still reports to `2.189.68.149` regardless of VPN
+- If VPN split-tunnels Iranian IPs, this traffic may bypass encryption
+
+For full DNS analysis, see [Bale Protocol - Section 7](bale-protocol.md#7-dns-resolution-architecture).
+
 ---
 
 ## Shad Surveillance Indicators (STUDENT DATA)
@@ -365,6 +413,7 @@ Dedicated endpoint for tracking student usage patterns.
 | Sentry servers | Error tracking |
 | Firebase (Google) | Push notifications, remote config |
 | `api.bale.ai` | Main API |
+| `2.189.68.149:443/dnscheck` (health.ble.ir) | DNS query telemetry |
 
 ### Shad Servers
 
@@ -420,6 +469,7 @@ Firebase integration allows server-initiated actions without user interaction.
 | Contact access | On-demand | Persistent observer | Persistent observer | Default enabled |
 | Emulator detection | Rare (games) | Yes | Yes | Yes |
 | Root detection | Banking apps | Yes | Yes | No |
+| DNS handling | OS default | OS default | **Custom + Telemetry** | OS default |
 | User base | Adults | Adults | Adults | **Minors (students)** |
 
 ---

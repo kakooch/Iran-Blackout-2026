@@ -19,6 +19,7 @@ This analysis documents the network architecture, video call protocols, and serv
 | **Hosting** | AS48159 (TIC) | AS202798 (Own ASN) | iranlms.ir (MCI) |
 | **XMPP Usage** | None | None | None |
 | **Telegram Fork** | Yes (v45) | Yes (v40) | Yes (v38) |
+| **DNS Handling** | Custom (dnsjava) + **Telemetry** | OS default | OS default |
 | **Device Fingerprinting** | Build.SERIAL + AppMetrica | IMEI via ACRA | Firebase Crashlytics |
 | **MXB Connected** | Yes (gRPC) | Yes (TLRPC) | No (Standalone) |
 | **Anti-Analysis** | Root detection | Emulator detection | Emulator detection |
@@ -30,8 +31,10 @@ This analysis documents the network architecture, video call protocols, and serv
 All three apps contain code patterns indicating extensive user monitoring:
 
 - **Eitaa:** Collects device IMEI with every crash report, persistent contact observer, emulator detection
-- **Bale:** Device serial collection, Yandex AppMetrica analytics, Sentry behavioral monitoring, Firebase remote commands
+- **Bale:** Device serial collection, Yandex AppMetrica analytics, Sentry behavioral monitoring, Firebase remote commands, **DNS query telemetry** (reports domains to `health.ble.ir`)
 - **Shad:** Firebase Crashlytics for crash/behavior reporting, contact syncing enabled by default, emulator detection, usage tracking endpoint
+
+> **Note on Bale DNS Telemetry:** Bale implements custom DNS resolution and reports connection domains to a Bale-controlled endpoint (`2.189.68.149`). This telemetry is **app-internal only** (not system-wide) and does not capture external links clicked in chat. See [Surveillance Analysis](docs/surveillance-analysis.md) for details.
 
 ---
 

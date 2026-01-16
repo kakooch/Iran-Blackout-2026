@@ -109,24 +109,7 @@ Extracted from certificate pinning configuration in `C22580vU2.java`:
 | video3-siloo.ble.ir | 2.189.68.99 | Video node 3 |
 | arbaeen.ble.ir | 2.189.68.122 | Arbaeen pilgrimage |
 
-### 2.3 DNS Check Endpoint
-
-Internal DNS verification:
-```
-https://2.189.68.149:443/dnscheck
-```
-
-### 2.4 Fallback DNS Resolvers
-
-```
-185.136.96.111  - ClouDNS (Bulgaria)
-185.136.98.111  - ClouDNS (Bulgaria)
-1.1.1.1         - Cloudflare
-8.8.8.8         - Google
-9.9.9.9         - Quad9
-```
-
-### 2.5 Payment Integration
+### 2.3 Payment Integration
 
 | Service | IP | ASN |
 |---------|-----|-----|
@@ -176,3 +159,182 @@ To decrypt: Requires SRTP master key extraction via runtime hooking (Frida).
 3. **State Infrastructure**: Hosted on TIC (government backbone)
 4. **Telegram Fork**: Based on Telegram source code
 5. **Full Pinning**: Certificate pinning prevents simple MITM
+6. **DNS Telemetry**: Reports connection domains to Bale servers (see Section 7)
+
+---
+
+## 7. DNS Resolution Architecture
+
+Bale implements a custom DNS resolution system that bypasses the operating system's DNS on Android 26+.
+
+### 7.1 Custom DNS Resolvers
+
+**File:** `ir/nasim/InterfaceC9138Yq4.java`
+
+```java
+// Method h() - Creates custom DNS resolver set (Android 26+ only)
+public final Set h() {
+    if (Build.VERSION.SDK_INT < 26) {
+        return AbstractC4363Eu6.c(new LA4());  // Fallback to OS DNS
+    }
+    String[] strArr = {"185.136.96.111", "185.136.98.111", "1.1.1.1", "8.8.8.8", "9.9.9.9"};
+    ArrayList arrayList = new ArrayList(5);
+    for (int i = 0; i < 5; i++) {
+        String str = strArr[i];
+        SimpleResolver simpleResolver = new SimpleResolver(str);
+        simpleResolver.setTimeout(Duration.ofSeconds(3L));
+        arrayList.add(new C14256hc8(str, simpleResolver));
+    }
+    return AbstractC15401jX0.r1(arrayList);
+}
+```
+
+**Resolver Priority Order:**
+
+| Priority | IP | Provider | Location |
+|----------|-----|----------|----------|
+| 1 | 185.136.96.111 | ClouDNS | Bulgaria |
+| 2 | 185.136.98.111 | ClouDNS | Bulgaria |
+| 3 | 1.1.1.1 | Cloudflare | Global |
+| 4 | 8.8.8.8 | Google | Global |
+| 5 | 9.9.9.9 | Quad9 | Global |
+
+### 7.2 DNS Telemetry (ConnectionHealthChecker)
+
+**File:** `ir/nasim/C19596qd1.java`
+
+Bale implements a "ConnectionHealthChecker" that reports DNS-related events to a Bale-controlled endpoint.
+
+**Endpoint:**
+```
+https://2.189.68.149:443/dnscheck
+Host: health.ble.ir
+```
+
+**IP Location:** `2.189.68.149` is within Bale's own server range (AS48159 TIC).
+
+**Request Payload:**
+```java
+// Method c() - Creates JSON request body
+RequestBody.INSTANCE.create(
+    "{\n" +
+    "    \"domain\": \"" + domain + "\",\n" +
+    "    \"api_version\": \"" + apiVersion + "\",\n" +
+    "    \"app_version\": \"" + appVersion + "\",\n" +
+    "    \"request_time\": \"" + requestTime + "\",\n" +
+    "    \"session_id\": \"" + sessionId + "\"\n" +
+    "}",
+    MediaType.get("application/json")
+);
+```
+
+**Data Collected:**
+
+| Field | Description |
+|-------|-------------|
+| `domain` | The hostname being checked |
+| `api_version` | Android SDK version |
+| `app_version` | Bale app version |
+| `request_time` | Time taken for resolution (ms) |
+| `session_id` | Persistent session identifier |
+
+### 7.3 When Telemetry is Triggered
+
+**File:** `ir/nasim/C19989rH4.java` (Custom OkHttp Dns implementation)
+
+```java
+@Override
+public List lookup(String str) throws UnknownHostException {
+    try {
+        DnsResolution dnsResolutionB = c().b(str);  // Try custom DNS
+        // ... convert to InetAddress list
+    } catch (UnknownHostException e) {
+        // ON FAILURE: Report to health checker
+        this.b.f(str, String.valueOf(requestTime));
+        throw e;
+    }
+}
+```
+
+**File:** `ir/nasim/CL.java` (TCP Connection)
+
+```java
+private static void y(long j, ConnectionEndpoint connectionEndpoint) {
+    // Report host on connection establishment
+    C19596qd1.d(C5721Ko.b).f(connectionEndpoint.getHost(), elapsedTime);
+}
+```
+
+**Trigger Conditions:**
+1. DNS resolution failures (UnknownHostException)
+2. TCP connection establishment to Bale servers
+
+### 7.4 Scope and Limitations
+
+**What IS Captured:**
+- Domains that Bale app attempts to resolve via OkHttp
+- Connection establishment to Bale servers
+
+**What is NOT Captured:**
+- DNS queries from other apps (scope is app-internal only)
+- External links clicked in Bale (WebView uses Chromium's DNS)
+- System-wide DNS queries
+
+**WebView Behavior:**
+
+**File:** `ir/nasim/C23572x88.java` and `ir/nasim/P76.java`
+
+```java
+// C23572x88.java - Only intercepts Bale's own domains
+@Override
+public WebResourceResponse shouldInterceptRequest(WebView webView, WebResourceRequest request) {
+    WebResourceResponse response = this.c.a(request);
+    return response != null ? response : super.shouldInterceptRequest(webView, request);
+}
+
+// P76.java line 148 - Check if request is for Bale's host
+if (!url.getHost().equals(Uri.parse(this.b).getHost())) {
+    return null;  // Don't intercept external URLs
+}
+```
+
+### 7.5 VPN Implications
+
+1. **App-internal telemetry still reports to Bale** - DNS health checks go to `2.189.68.149` regardless of VPN
+2. **Split-tunnel VPNs may leak this traffic** - If VPN excludes Iranian IPs, telemetry bypasses encryption
+3. **External links are safe** - Links clicked in Bale use system DNS (routed through VPN if configured)
+
+### 7.6 DoH Implementation
+
+Bale includes a DNS-over-HTTPS implementation from the dnsjava library.
+
+**File:** `org/xbill/DNS/DohResolver.java`
+
+Features:
+- HTTP/2 support
+- GET and POST methods
+- `application/dns-message` content type
+- Configurable timeout and concurrent requests
+
+### 7.7 Reproduction
+
+```bash
+# Decompile Bale APK
+jadx -d bale_java evidence/bale.apk --no-res
+
+# Find DNS health check code
+grep -r "dnscheck" bale_java/sources/
+grep -r "health.ble.ir" bale_java/sources/
+grep -r "ConnectionHealthChecker" bale_java/sources/
+
+# Find custom DNS resolvers
+grep -r "SimpleResolver" bale_java/sources/
+grep -r "185.136" bale_java/sources/
+
+# Find DoH implementation
+grep -r "DohResolver" bale_java/sources/
+
+# Verify IP ownership
+whois 2.189.68.149    # Should show TIC-AS (AS48159)
+whois 185.136.96.111  # Should show ClouDNS
+```

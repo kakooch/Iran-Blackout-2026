@@ -688,6 +688,216 @@ public class MainTabFragment {
 
 ---
 
+---
+
+## DNS Handling Code
+
+### Bale: ConnectionHealthChecker (DNS Telemetry)
+
+**File:** `bale_java/sources/ir/nasim/C19596qd1.java`
+
+```java
+package ir.nasim;
+
+import okhttp3.*;
+
+/* Class: ConnectionHealthChecker - Reports DNS/connection events to Bale servers */
+public final class C19596qd1 {
+    private final OkHttpClient c;
+    private final String d;  // healthCheckerUrl
+
+    // Constructor with hardcoded endpoint
+    public C19596qd1(OkHttpClient okHttpClient, InterfaceC3570Bk5 interfaceC3570Bk5) {
+        this(Build.VERSION.SDK_INT, strR, okHttpClient,
+             "https://2.189.68.149:443/dnscheck",  // Hardcoded Bale endpoint
+             interfaceC3570Bk5);
+    }
+
+    // Create JSON request body
+    private final RequestBody c(String domain, String apiVersion,
+                                String appVersion, String requestTime, String sessionId) {
+        return RequestBody.INSTANCE.create(
+            "{\n" +
+            "    \"domain\": \"" + domain + "\",\n" +
+            "    \"api_version\": \"" + apiVersion + "\",\n" +
+            "    \"app_version\": \"" + appVersion + "\",\n" +
+            "    \"request_time\": \"" + requestTime + "\",\n" +
+            "    \"session_id\": \"" + sessionId + "\"\n" +
+            "}",
+            MediaType.INSTANCE.get("application/json")
+        );
+    }
+
+    // Send health check request
+    public final void f(String domain, String requestTimeInMillis) {
+        Request requestBuild = new Request.Builder()
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Host", "health.ble.ir")
+            .url(this.d)  // https://2.189.68.149:443/dnscheck
+            .post(c(domain, apiVersion, appVersion, requestTimeInMillis, sessionId))
+            .build();
+
+        C19406qI3.a("ConnectionHealthChecker",
+            "Requesting health check for domain: " + domain, new Object[0]);
+
+        Call callNewCall = this.c.newCall(requestBuild);
+        callNewCall.enqueue(new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) {
+                C19406qI3.a("ConnectionHealthChecker",
+                    "Health check successful for domain: " + domain +
+                    " and response code: " + response.code(), new Object[0]);
+            }
+        });
+    }
+}
+```
+
+### Bale: Custom DNS Resolvers
+
+**File:** `bale_java/sources/ir/nasim/InterfaceC9138Yq4.java`
+
+```java
+package ir.nasim;
+
+import org.xbill.DNS.SimpleResolver;
+import java.time.Duration;
+import java.util.*;
+
+public interface InterfaceC9138Yq4 {
+    public static final class a {
+        // Method h() - Creates custom DNS resolver set
+        public final Set h() {
+            // Only use custom DNS on Android 26+ (Oreo)
+            if (Build.VERSION.SDK_INT < 26) {
+                return AbstractC4363Eu6.c(new LA4());  // Fallback to OS DNS
+            }
+
+            // Hardcoded DNS servers (priority order)
+            String[] strArr = {
+                "185.136.96.111",  // ClouDNS (Bulgaria)
+                "185.136.98.111",  // ClouDNS (Bulgaria)
+                "1.1.1.1",         // Cloudflare
+                "8.8.8.8",         // Google
+                "9.9.9.9"          // Quad9
+            };
+
+            ArrayList arrayList = new ArrayList(5);
+            for (int i = 0; i < 5; i++) {
+                String str = strArr[i];
+                SimpleResolver simpleResolver = new SimpleResolver(str);
+                simpleResolver.setTimeout(Duration.ofSeconds(3L));
+                arrayList.add(new C14256hc8(str, simpleResolver));
+            }
+            return AbstractC15401jX0.r1(arrayList);
+        }
+    }
+}
+```
+
+### Bale: Custom OkHttp Dns Implementation
+
+**File:** `bale_java/sources/ir/nasim/C19989rH4.java`
+
+```java
+package ir.nasim;
+
+import okhttp3.Dns;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+
+/* OkHttp Dns implementation that reports failures to health checker */
+public final class C19989rH4 implements Dns {
+    private final C19596qd1 b;  // ConnectionHealthChecker
+
+    public C19989rH4(InterfaceC7720Sx5 dnsResolverProvider, C19596qd1 connectionHealthChecker) {
+        this.b = connectionHealthChecker;
+    }
+
+    @Override
+    public List lookup(String hostname) throws UnknownHostException {
+        long startTime = SystemClock.elapsedRealtime();
+        try {
+            DnsResolution dnsResolutionB = c().b(hostname);  // Custom DNS lookup
+            if (dnsResolutionB == null) {
+                throw new UnknownHostException();
+            }
+            List<String> addresses = dnsResolutionB.getAddresses();
+            ArrayList arrayList = new ArrayList();
+            for (String addr : addresses) {
+                InetAddress inetAddressD = d(hostname, addr);
+                if (inetAddressD != null) {
+                    arrayList.add(inetAddressD);
+                }
+            }
+            if (arrayList.isEmpty()) {
+                throw new UnknownHostException();
+            }
+            return arrayList;
+        } catch (UnknownHostException e) {
+            // ON FAILURE: Report domain to health checker
+            long elapsedTime = SystemClock.elapsedRealtime() - startTime;
+            this.b.f(hostname, String.valueOf(elapsedTime));
+            throw e;
+        }
+    }
+}
+```
+
+### Bale: TCP Connection Health Reporting
+
+**File:** `bale_java/sources/ir/nasim/CL.java`
+
+```java
+package ir.nasim;
+
+/* TCP Connection class that reports connection health */
+public class CL extends AbstractC24857zK {
+    // Called on connection establishment
+    private static void y(long startTime, ConnectionEndpoint connectionEndpoint) {
+        long elapsedTime = -1;
+        if (startTime != -1) {
+            try {
+                elapsedTime = SystemClock.elapsedRealtime() - startTime;
+            } catch (Exception unused) {
+                return;
+            }
+        }
+        // Report to ConnectionHealthChecker
+        C19596qd1.d(C5721Ko.b).f(connectionEndpoint.getHost(), String.valueOf(elapsedTime));
+    }
+}
+```
+
+### Eitaa & Shad: OS Default DNS
+
+**File:** `eitaa_java/sources/okhttp3/Dns.java` (also in shad_java)
+
+```java
+package okhttp3;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.List;
+
+public interface Dns {
+    // Default implementation - uses system DNS
+    Dns SYSTEM = new Dns() {
+        @Override
+        public List<InetAddress> lookup(String hostname) throws UnknownHostException {
+            // Delegates to OS DNS resolver
+            return Arrays.asList(InetAddress.getAllByName(hostname));
+        }
+    };
+
+    List<InetAddress> lookup(String hostname) throws UnknownHostException;
+}
+```
+
+---
+
 ## Checksums
 
 ```
