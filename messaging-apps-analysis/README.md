@@ -22,7 +22,6 @@ This analysis documents the network architecture, video call protocols, and serv
 | **Device Fingerprinting** | Build.SERIAL + AppMetrica | IMEI via ACRA | Firebase Crashlytics |
 | **MXB Connected** | Yes (gRPC) | Yes (TLRPC) | No (Standalone) |
 | **Anti-Analysis** | Root detection | Emulator detection | Emulator detection |
-| **User Base** | ~10M | ~15M | **34M (students)** |
 
 **None of these applications use peer-to-peer connections.** All media traffic routes through centralized Iranian infrastructure, enabling potential state-level interception.
 
