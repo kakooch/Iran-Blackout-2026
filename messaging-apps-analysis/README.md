@@ -201,16 +201,6 @@ For complete infrastructure details, see [Infrastructure Mapping](docs/infrastru
 
 Both apps implement Iran's national cross-messenger protocol, connecting:
 
-| ID | App | Notes |
-|----|-----|-------|
-| 1 | Bale | Bank Mellat subsidiary |
-| 2 | IGap | Private |
-| 3 | Gap | Private |
-| 4 | Eitaa | IRIB-promoted |
-| 5 | Rubika | MTN Irancell |
-| 6 | Soroush | IRGC-affiliated |
-| 7 | Chavosh | (Eitaa only) |
-
 See [MXB Protocol](docs/mxb-protocol.md) for detailed code analysis.
 
 ---
