@@ -19,8 +19,18 @@ This analysis documents the network architecture, video call protocols, and serv
 | **Hosting ASN** | AS48159 (TIC - State Backbone) | AS202798 (Own ASN) |
 | **XMPP Usage** | None | None |
 | **Telegram Fork** | Yes | Yes |
+| **Device Fingerprinting** | Build.SERIAL + AppMetrica | IMEI via ACRA |
+| **MXB Connected** | Yes (gRPC) | Yes (TLRPC) |
+| **Anti-Analysis** | Root detection | Emulator detection |
 
 **Neither application uses peer-to-peer connections.** All media traffic routes through centralized Iranian infrastructure, enabling potential state-level interception.
+
+### Surveillance Indicators
+
+Both apps contain code patterns indicating extensive user monitoring:
+
+- **Eitaa:** Collects device IMEI with every crash report, persistent contact observer, emulator detection
+- **Bale:** Device serial collection, Yandex AppMetrica analytics, Sentry behavioral monitoring, Firebase remote commands
 
 ---
 
@@ -31,6 +41,8 @@ This analysis documents the network architecture, video call protocols, and serv
 | [Bale Protocol Analysis](docs/bale-protocol.md) | LiveKit/WebRTC stack, server inventory, cert pinning |
 | [Eitaa Protocol Analysis](docs/eitaa-protocol.md) | Linphone/SIP stack, ASN details, TLS configuration |
 | [Infrastructure Mapping](docs/infrastructure.md) | Full AS topology, IP allocation, peering relationships |
+| [Surveillance Analysis](docs/surveillance-analysis.md) | Device fingerprinting, data exfiltration, analytics |
+| [MXB Protocol](docs/mxb-protocol.md) | Message Exchange Bus - cross-app interoperability protocol |
 | [Reproduction Methodology](docs/methodology.md) | Step-by-step guide to reproduce this analysis |
 
 ---
@@ -74,12 +86,15 @@ messaging-apps-analysis/
 │   ├── bale-protocol.md             # Bale technical analysis
 │   ├── eitaa-protocol.md            # Eitaa technical analysis
 │   ├── infrastructure.md            # Network infrastructure mapping
+│   ├── surveillance-analysis.md     # Privacy/surveillance findings
+│   ├── mxb-protocol.md              # MXB cross-app protocol
 │   └── methodology.md               # Reproduction instructions
 └── evidence/
     ├── bale.apk                     # Original APK (58MB)
     ├── eitaa.apk                    # Original APK (37MB)
     ├── checksums.txt                # SHA-256 verification hashes
-    └── native-libs.txt              # Extracted native library listing
+    ├── native-libs.txt              # Extracted native library listing
+    └── code-snippets.md             # Key code evidence
 ```
 
 ---
@@ -147,7 +162,25 @@ For complete infrastructure details, see [Infrastructure Mapping](docs/infrastru
 1. **No End-to-End Encryption Guarantee**: Centralized architecture allows server-side decryption
 2. **Full State Visibility**: Traffic passes through government-controlled infrastructure
 3. **No International Redundancy**: 100% domestic hosting with no CDN presence outside Iran
-4. **Interoperability**: Both apps connected via MXB (Message Exchange Bus) to other Iranian messengers
+4. **Cross-App Surveillance**: MXB enables querying user presence across all 7 Iranian messengers
+5. **Persistent Device Tracking**: IMEI/serial collection survives app reinstalls and account changes
+6. **Anti-Analysis Features**: Emulator and root detection suggest awareness of security scrutiny
+
+### MXB (Message Exchange Bus)
+
+Both apps implement Iran's national cross-messenger protocol, connecting:
+
+| ID | App | Notes |
+|----|-----|-------|
+| 1 | Bale | Bank Mellat subsidiary |
+| 2 | IGap | Private |
+| 3 | Gap | Private |
+| 4 | Eitaa | IRIB-promoted |
+| 5 | Rubika | MTN Irancell |
+| 6 | Soroush | IRGC-affiliated |
+| 7 | Chavosh | (Eitaa only) |
+
+See [MXB Protocol](docs/mxb-protocol.md) for detailed code analysis.
 
 ---
 
