@@ -2,8 +2,6 @@
 
 **Analysis Date:** January 15, 2026
 **Source:** Decompiled APK source code
-**Classification:** OSINT / Forensic Technical Analysis
-
 ---
 
 ## Executive Summary
