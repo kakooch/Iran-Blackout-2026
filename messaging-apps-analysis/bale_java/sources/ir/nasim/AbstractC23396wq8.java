@@ -1,0 +1,39 @@
+package ir.nasim;
+
+/* renamed from: ir.nasim.wq8, reason: case insensitive filesystem */
+/* loaded from: classes3.dex */
+abstract /* synthetic */ class AbstractC23396wq8 {
+    static final /* synthetic */ int[] a;
+    static final /* synthetic */ int[] b;
+
+    static {
+        int[] iArr = new int[Vq8.values().length];
+        b = iArr;
+        try {
+            iArr[Vq8.k.ordinal()] = 1;
+        } catch (NoSuchFieldError unused) {
+        }
+        try {
+            b[Vq8.m.ordinal()] = 2;
+        } catch (NoSuchFieldError unused2) {
+        }
+        try {
+            b[Vq8.j.ordinal()] = 3;
+        } catch (NoSuchFieldError unused3) {
+        }
+        int[] iArr2 = new int[EnumC22800vq8.values().length];
+        a = iArr2;
+        try {
+            iArr2[EnumC22800vq8.MAP.ordinal()] = 1;
+        } catch (NoSuchFieldError unused4) {
+        }
+        try {
+            a[EnumC22800vq8.VECTOR.ordinal()] = 2;
+        } catch (NoSuchFieldError unused5) {
+        }
+        try {
+            a[EnumC22800vq8.SCALAR.ordinal()] = 3;
+        } catch (NoSuchFieldError unused6) {
+        }
+    }
+}

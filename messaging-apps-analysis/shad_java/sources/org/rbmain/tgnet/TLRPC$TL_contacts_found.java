@@ -1,0 +1,117 @@
+package org.rbmain.tgnet;
+
+import java.util.ArrayList;
+
+/* loaded from: classes4.dex */
+public class TLRPC$TL_contacts_found extends TLObject {
+    public static int constructor = -1290580579;
+    public ArrayList<TLRPC$Peer> my_results = new ArrayList<>();
+    public ArrayList<TLRPC$Peer> results = new ArrayList<>();
+    public ArrayList<TLRPC$Chat> chats = new ArrayList<>();
+    public ArrayList<TLRPC$User> users = new ArrayList<>();
+
+    public static TLRPC$TL_contacts_found TLdeserialize(AbstractSerializedData abstractSerializedData, int i, boolean z) {
+        if (constructor != i) {
+            if (z) {
+                throw new RuntimeException(String.format("can't parse magic %x in TL_contacts_found", Integer.valueOf(i)));
+            }
+            return null;
+        }
+        TLRPC$TL_contacts_found tLRPC$TL_contacts_found = new TLRPC$TL_contacts_found();
+        tLRPC$TL_contacts_found.readParams(abstractSerializedData, z);
+        return tLRPC$TL_contacts_found;
+    }
+
+    @Override // org.rbmain.tgnet.TLObject
+    public void readParams(AbstractSerializedData abstractSerializedData, boolean z) {
+        int int32 = abstractSerializedData.readInt32(z);
+        if (int32 != 481674261) {
+            if (z) {
+                throw new RuntimeException(String.format("wrong Vector magic, got %x", Integer.valueOf(int32)));
+            }
+            return;
+        }
+        int int322 = abstractSerializedData.readInt32(z);
+        for (int i = 0; i < int322; i++) {
+            TLRPC$Peer tLRPC$PeerTLdeserialize = TLRPC$Peer.TLdeserialize(abstractSerializedData, abstractSerializedData.readInt32(z), z);
+            if (tLRPC$PeerTLdeserialize == null) {
+                return;
+            }
+            this.my_results.add(tLRPC$PeerTLdeserialize);
+        }
+        int int323 = abstractSerializedData.readInt32(z);
+        if (int323 != 481674261) {
+            if (z) {
+                throw new RuntimeException(String.format("wrong Vector magic, got %x", Integer.valueOf(int323)));
+            }
+            return;
+        }
+        int int324 = abstractSerializedData.readInt32(z);
+        for (int i2 = 0; i2 < int324; i2++) {
+            TLRPC$Peer tLRPC$PeerTLdeserialize2 = TLRPC$Peer.TLdeserialize(abstractSerializedData, abstractSerializedData.readInt32(z), z);
+            if (tLRPC$PeerTLdeserialize2 == null) {
+                return;
+            }
+            this.results.add(tLRPC$PeerTLdeserialize2);
+        }
+        int int325 = abstractSerializedData.readInt32(z);
+        if (int325 != 481674261) {
+            if (z) {
+                throw new RuntimeException(String.format("wrong Vector magic, got %x", Integer.valueOf(int325)));
+            }
+            return;
+        }
+        int int326 = abstractSerializedData.readInt32(z);
+        for (int i3 = 0; i3 < int326; i3++) {
+            TLRPC$Chat tLRPC$ChatTLdeserialize = TLRPC$Chat.TLdeserialize(abstractSerializedData, abstractSerializedData.readInt32(z), z);
+            if (tLRPC$ChatTLdeserialize == null) {
+                return;
+            }
+            this.chats.add(tLRPC$ChatTLdeserialize);
+        }
+        int int327 = abstractSerializedData.readInt32(z);
+        if (int327 != 481674261) {
+            if (z) {
+                throw new RuntimeException(String.format("wrong Vector magic, got %x", Integer.valueOf(int327)));
+            }
+            return;
+        }
+        int int328 = abstractSerializedData.readInt32(z);
+        for (int i4 = 0; i4 < int328; i4++) {
+            TLRPC$User tLRPC$UserTLdeserialize = TLRPC$User.TLdeserialize(abstractSerializedData, abstractSerializedData.readInt32(z), z);
+            if (tLRPC$UserTLdeserialize == null) {
+                return;
+            }
+            this.users.add(tLRPC$UserTLdeserialize);
+        }
+    }
+
+    @Override // org.rbmain.tgnet.TLObject
+    public void serializeToStream(AbstractSerializedData abstractSerializedData) {
+        abstractSerializedData.writeInt32(constructor);
+        abstractSerializedData.writeInt32(481674261);
+        int size = this.my_results.size();
+        abstractSerializedData.writeInt32(size);
+        for (int i = 0; i < size; i++) {
+            this.my_results.get(i).serializeToStream(abstractSerializedData);
+        }
+        abstractSerializedData.writeInt32(481674261);
+        int size2 = this.results.size();
+        abstractSerializedData.writeInt32(size2);
+        for (int i2 = 0; i2 < size2; i2++) {
+            this.results.get(i2).serializeToStream(abstractSerializedData);
+        }
+        abstractSerializedData.writeInt32(481674261);
+        int size3 = this.chats.size();
+        abstractSerializedData.writeInt32(size3);
+        for (int i3 = 0; i3 < size3; i3++) {
+            this.chats.get(i3).serializeToStream(abstractSerializedData);
+        }
+        abstractSerializedData.writeInt32(481674261);
+        int size4 = this.users.size();
+        abstractSerializedData.writeInt32(size4);
+        for (int i4 = 0; i4 < size4; i4++) {
+            this.users.get(i4).serializeToStream(abstractSerializedData);
+        }
+    }
+}

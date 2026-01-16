@@ -1,0 +1,11 @@
+package ir.nasim;
+
+/* loaded from: classes7.dex */
+public class H67 extends F67 {
+    @Override // ir.nasim.F67, ir.nasim.AbstractC12724f57
+    public void b(T1 t1, boolean z) {
+        this.b = t1.e(z);
+        this.r = t1.f(z);
+        this.c = t1.g(z);
+    }
+}

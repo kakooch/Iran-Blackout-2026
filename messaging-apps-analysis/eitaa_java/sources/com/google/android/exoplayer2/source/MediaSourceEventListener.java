@@ -1,0 +1,390 @@
+package com.google.android.exoplayer2.source;
+
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.upstream.DataSpec;
+import com.google.android.exoplayer2.util.Assertions;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+/* loaded from: classes.dex */
+public interface MediaSourceEventListener {
+
+    /* renamed from: com.google.android.exoplayer2.source.MediaSourceEventListener$-CC, reason: invalid class name */
+    public final /* synthetic */ class CC {
+        public static void $default$onDownstreamFormatChanged(MediaSourceEventListener mediaSourceEventListener, int i, MediaSource.MediaPeriodId mediaPeriodId, MediaLoadData mediaLoadData) {
+        }
+
+        public static void $default$onLoadCanceled(MediaSourceEventListener mediaSourceEventListener, int i, MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+        }
+
+        public static void $default$onLoadCompleted(MediaSourceEventListener mediaSourceEventListener, int i, MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+        }
+
+        public static void $default$onLoadStarted(MediaSourceEventListener mediaSourceEventListener, int i, MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+        }
+
+        public static void $default$onMediaPeriodCreated(MediaSourceEventListener mediaSourceEventListener, int i, MediaSource.MediaPeriodId mediaPeriodId) {
+        }
+
+        public static void $default$onMediaPeriodReleased(MediaSourceEventListener mediaSourceEventListener, int i, MediaSource.MediaPeriodId mediaPeriodId) {
+        }
+
+        public static void $default$onReadingStarted(MediaSourceEventListener mediaSourceEventListener, int i, MediaSource.MediaPeriodId mediaPeriodId) {
+        }
+
+        public static void $default$onUpstreamDiscarded(MediaSourceEventListener mediaSourceEventListener, int i, MediaSource.MediaPeriodId mediaPeriodId, MediaLoadData mediaLoadData) {
+        }
+    }
+
+    void onDownstreamFormatChanged(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, MediaLoadData mediaLoadData);
+
+    void onLoadCanceled(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData);
+
+    void onLoadCompleted(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData);
+
+    void onLoadError(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException error, boolean wasCanceled);
+
+    void onLoadStarted(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData);
+
+    void onMediaPeriodCreated(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId);
+
+    void onMediaPeriodReleased(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId);
+
+    void onReadingStarted(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId);
+
+    void onUpstreamDiscarded(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, MediaLoadData mediaLoadData);
+
+    public static final class LoadEventInfo {
+        public final long bytesLoaded;
+        public final DataSpec dataSpec;
+        public final long elapsedRealtimeMs;
+        public final long loadDurationMs;
+        public final Map<String, List<String>> responseHeaders;
+        public final Uri uri;
+
+        public LoadEventInfo(DataSpec dataSpec, Uri uri, Map<String, List<String>> responseHeaders, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+            this.dataSpec = dataSpec;
+            this.uri = uri;
+            this.responseHeaders = responseHeaders;
+            this.elapsedRealtimeMs = elapsedRealtimeMs;
+            this.loadDurationMs = loadDurationMs;
+            this.bytesLoaded = bytesLoaded;
+        }
+    }
+
+    public static final class MediaLoadData {
+        public final int dataType;
+        public final long mediaEndTimeMs;
+        public final long mediaStartTimeMs;
+        public final Format trackFormat;
+        public final Object trackSelectionData;
+        public final int trackSelectionReason;
+        public final int trackType;
+
+        public MediaLoadData(int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs, long mediaEndTimeMs) {
+            this.dataType = dataType;
+            this.trackType = trackType;
+            this.trackFormat = trackFormat;
+            this.trackSelectionReason = trackSelectionReason;
+            this.trackSelectionData = trackSelectionData;
+            this.mediaStartTimeMs = mediaStartTimeMs;
+            this.mediaEndTimeMs = mediaEndTimeMs;
+        }
+    }
+
+    public static final class EventDispatcher {
+        private final CopyOnWriteArrayList<ListenerAndHandler> listenerAndHandlers;
+        public final MediaSource.MediaPeriodId mediaPeriodId;
+        private final long mediaTimeOffsetMs;
+        public final int windowIndex;
+
+        public EventDispatcher() {
+            this(new CopyOnWriteArrayList(), 0, null, 0L);
+        }
+
+        private EventDispatcher(CopyOnWriteArrayList<ListenerAndHandler> listenerAndHandlers, int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, long mediaTimeOffsetMs) {
+            this.listenerAndHandlers = listenerAndHandlers;
+            this.windowIndex = windowIndex;
+            this.mediaPeriodId = mediaPeriodId;
+            this.mediaTimeOffsetMs = mediaTimeOffsetMs;
+        }
+
+        public EventDispatcher withParameters(int windowIndex, MediaSource.MediaPeriodId mediaPeriodId, long mediaTimeOffsetMs) {
+            return new EventDispatcher(this.listenerAndHandlers, windowIndex, mediaPeriodId, mediaTimeOffsetMs);
+        }
+
+        public void addEventListener(Handler handler, MediaSourceEventListener eventListener) {
+            Assertions.checkArgument((handler == null || eventListener == null) ? false : true);
+            this.listenerAndHandlers.add(new ListenerAndHandler(handler, eventListener));
+        }
+
+        public void removeEventListener(MediaSourceEventListener eventListener) {
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                if (next.listener == eventListener) {
+                    this.listenerAndHandlers.remove(next);
+                }
+            }
+        }
+
+        public void mediaPeriodCreated() {
+            final MediaSource.MediaPeriodId mediaPeriodId = (MediaSource.MediaPeriodId) Assertions.checkNotNull(this.mediaPeriodId);
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$zkBePV9aw6eu6jrQWl3mIh5jPSg
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$mediaPeriodCreated$0$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, mediaPeriodId);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$mediaPeriodCreated$0, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$mediaPeriodCreated$0$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, MediaSource.MediaPeriodId mediaPeriodId) {
+            mediaSourceEventListener.onMediaPeriodCreated(this.windowIndex, mediaPeriodId);
+        }
+
+        public void mediaPeriodReleased() {
+            final MediaSource.MediaPeriodId mediaPeriodId = (MediaSource.MediaPeriodId) Assertions.checkNotNull(this.mediaPeriodId);
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$erpkd5VvWJ5xGWt6WeKhAKhIynw
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$mediaPeriodReleased$1$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, mediaPeriodId);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$mediaPeriodReleased$1, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$mediaPeriodReleased$1$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, MediaSource.MediaPeriodId mediaPeriodId) {
+            mediaSourceEventListener.onMediaPeriodReleased(this.windowIndex, mediaPeriodId);
+        }
+
+        public void loadStarted(DataSpec dataSpec, int dataType, long elapsedRealtimeMs) {
+            loadStarted(dataSpec, dataType, -1, null, 0, null, -9223372036854775807L, -9223372036854775807L, elapsedRealtimeMs);
+        }
+
+        public void loadStarted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeUs, long mediaEndTimeUs, long elapsedRealtimeMs) {
+            loadStarted(new LoadEventInfo(dataSpec, dataSpec.uri, Collections.emptyMap(), elapsedRealtimeMs, 0L, 0L), new MediaLoadData(dataType, trackType, trackFormat, trackSelectionReason, trackSelectionData, adjustMediaTime(mediaStartTimeUs), adjustMediaTime(mediaEndTimeUs)));
+        }
+
+        public void loadStarted(final LoadEventInfo loadEventInfo, final MediaLoadData mediaLoadData) {
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$8Wun0iJoMIX1Snh3zUMcoKTzWuQ
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$loadStarted$2$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, loadEventInfo, mediaLoadData);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$loadStarted$2, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$loadStarted$2$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+            mediaSourceEventListener.onLoadStarted(this.windowIndex, this.mediaPeriodId, loadEventInfo, mediaLoadData);
+        }
+
+        public void loadCompleted(DataSpec dataSpec, Uri uri, Map<String, List<String>> responseHeaders, int dataType, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+            loadCompleted(dataSpec, uri, responseHeaders, dataType, -1, null, 0, null, -9223372036854775807L, -9223372036854775807L, elapsedRealtimeMs, loadDurationMs, bytesLoaded);
+        }
+
+        public void loadCompleted(DataSpec dataSpec, Uri uri, Map<String, List<String>> responseHeaders, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeUs, long mediaEndTimeUs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+            loadCompleted(new LoadEventInfo(dataSpec, uri, responseHeaders, elapsedRealtimeMs, loadDurationMs, bytesLoaded), new MediaLoadData(dataType, trackType, trackFormat, trackSelectionReason, trackSelectionData, adjustMediaTime(mediaStartTimeUs), adjustMediaTime(mediaEndTimeUs)));
+        }
+
+        public void loadCompleted(final LoadEventInfo loadEventInfo, final MediaLoadData mediaLoadData) {
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$lf0qUEczRZoeee9GZpzu7zKv-HE
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$loadCompleted$3$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, loadEventInfo, mediaLoadData);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$loadCompleted$3, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$loadCompleted$3$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+            mediaSourceEventListener.onLoadCompleted(this.windowIndex, this.mediaPeriodId, loadEventInfo, mediaLoadData);
+        }
+
+        public void loadCanceled(DataSpec dataSpec, Uri uri, Map<String, List<String>> responseHeaders, int dataType, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+            loadCanceled(dataSpec, uri, responseHeaders, dataType, -1, null, 0, null, -9223372036854775807L, -9223372036854775807L, elapsedRealtimeMs, loadDurationMs, bytesLoaded);
+        }
+
+        public void loadCanceled(DataSpec dataSpec, Uri uri, Map<String, List<String>> responseHeaders, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeUs, long mediaEndTimeUs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded) {
+            loadCanceled(new LoadEventInfo(dataSpec, uri, responseHeaders, elapsedRealtimeMs, loadDurationMs, bytesLoaded), new MediaLoadData(dataType, trackType, trackFormat, trackSelectionReason, trackSelectionData, adjustMediaTime(mediaStartTimeUs), adjustMediaTime(mediaEndTimeUs)));
+        }
+
+        public void loadCanceled(final LoadEventInfo loadEventInfo, final MediaLoadData mediaLoadData) {
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$c5MeysDHWE7boChjI4wo0FoNcfE
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$loadCanceled$4$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, loadEventInfo, mediaLoadData);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$loadCanceled$4, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$loadCanceled$4$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
+            mediaSourceEventListener.onLoadCanceled(this.windowIndex, this.mediaPeriodId, loadEventInfo, mediaLoadData);
+        }
+
+        public void loadError(DataSpec dataSpec, Uri uri, Map<String, List<String>> responseHeaders, int dataType, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded, IOException error, boolean wasCanceled) {
+            loadError(dataSpec, uri, responseHeaders, dataType, -1, null, 0, null, -9223372036854775807L, -9223372036854775807L, elapsedRealtimeMs, loadDurationMs, bytesLoaded, error, wasCanceled);
+        }
+
+        public void loadError(DataSpec dataSpec, Uri uri, Map<String, List<String>> responseHeaders, int dataType, int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaStartTimeUs, long mediaEndTimeUs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded, IOException error, boolean wasCanceled) {
+            loadError(new LoadEventInfo(dataSpec, uri, responseHeaders, elapsedRealtimeMs, loadDurationMs, bytesLoaded), new MediaLoadData(dataType, trackType, trackFormat, trackSelectionReason, trackSelectionData, adjustMediaTime(mediaStartTimeUs), adjustMediaTime(mediaEndTimeUs)), error, wasCanceled);
+        }
+
+        public void loadError(final LoadEventInfo loadEventInfo, final MediaLoadData mediaLoadData, final IOException error, final boolean wasCanceled) {
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$VMo17DBpL-pYMxbgRrlzDjE8_1c
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$loadError$5$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, loadEventInfo, mediaLoadData, error, wasCanceled);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$loadError$5, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$loadError$5$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException iOException, boolean z) {
+            mediaSourceEventListener.onLoadError(this.windowIndex, this.mediaPeriodId, loadEventInfo, mediaLoadData, iOException, z);
+        }
+
+        public void readingStarted() {
+            final MediaSource.MediaPeriodId mediaPeriodId = (MediaSource.MediaPeriodId) Assertions.checkNotNull(this.mediaPeriodId);
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$qtoCjDG1TS3XpGX1A55I5NMuWK0
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$readingStarted$6$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, mediaPeriodId);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$readingStarted$6, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$readingStarted$6$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, MediaSource.MediaPeriodId mediaPeriodId) {
+            mediaSourceEventListener.onReadingStarted(this.windowIndex, mediaPeriodId);
+        }
+
+        public void upstreamDiscarded(int trackType, long mediaStartTimeUs, long mediaEndTimeUs) {
+            upstreamDiscarded(new MediaLoadData(1, trackType, null, 3, null, adjustMediaTime(mediaStartTimeUs), adjustMediaTime(mediaEndTimeUs)));
+        }
+
+        public void upstreamDiscarded(final MediaLoadData mediaLoadData) {
+            final MediaSource.MediaPeriodId mediaPeriodId = (MediaSource.MediaPeriodId) Assertions.checkNotNull(this.mediaPeriodId);
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$JbeDYGAMLp_wP1t3rdDlZrXHEzY
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$upstreamDiscarded$7$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, mediaPeriodId, mediaLoadData);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$upstreamDiscarded$7, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$upstreamDiscarded$7$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, MediaSource.MediaPeriodId mediaPeriodId, MediaLoadData mediaLoadData) {
+            mediaSourceEventListener.onUpstreamDiscarded(this.windowIndex, mediaPeriodId, mediaLoadData);
+        }
+
+        public void downstreamFormatChanged(int trackType, Format trackFormat, int trackSelectionReason, Object trackSelectionData, long mediaTimeUs) {
+            downstreamFormatChanged(new MediaLoadData(1, trackType, trackFormat, trackSelectionReason, trackSelectionData, adjustMediaTime(mediaTimeUs), -9223372036854775807L));
+        }
+
+        public void downstreamFormatChanged(final MediaLoadData mediaLoadData) {
+            Iterator<ListenerAndHandler> it = this.listenerAndHandlers.iterator();
+            while (it.hasNext()) {
+                ListenerAndHandler next = it.next();
+                final MediaSourceEventListener mediaSourceEventListener = next.listener;
+                postOrRun(next.handler, new Runnable() { // from class: com.google.android.exoplayer2.source.-$$Lambda$MediaSourceEventListener$EventDispatcher$Z9PYEAOjCvhlGpcze1E2Xz4zHqY
+                    @Override // java.lang.Runnable
+                    public final void run() {
+                        this.f$0.lambda$downstreamFormatChanged$8$MediaSourceEventListener$EventDispatcher(mediaSourceEventListener, mediaLoadData);
+                    }
+                });
+            }
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        /* renamed from: lambda$downstreamFormatChanged$8, reason: merged with bridge method [inline-methods] */
+        public /* synthetic */ void lambda$downstreamFormatChanged$8$MediaSourceEventListener$EventDispatcher(MediaSourceEventListener mediaSourceEventListener, MediaLoadData mediaLoadData) {
+            mediaSourceEventListener.onDownstreamFormatChanged(this.windowIndex, this.mediaPeriodId, mediaLoadData);
+        }
+
+        private long adjustMediaTime(long mediaTimeUs) {
+            long jUsToMs = C.usToMs(mediaTimeUs);
+            if (jUsToMs == -9223372036854775807L) {
+                return -9223372036854775807L;
+            }
+            return this.mediaTimeOffsetMs + jUsToMs;
+        }
+
+        private void postOrRun(Handler handler, Runnable runnable) {
+            if (handler.getLooper() == Looper.myLooper()) {
+                runnable.run();
+            } else {
+                handler.post(runnable);
+            }
+        }
+
+        private static final class ListenerAndHandler {
+            public final Handler handler;
+            public final MediaSourceEventListener listener;
+
+            public ListenerAndHandler(Handler handler, MediaSourceEventListener listener) {
+                this.handler = handler;
+                this.listener = listener;
+            }
+        }
+    }
+}

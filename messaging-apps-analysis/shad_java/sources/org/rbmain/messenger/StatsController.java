@@ -1,0 +1,290 @@
+package org.rbmain.messenger;
+
+import android.content.SharedPreferences;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.lang.reflect.Array;
+
+/* loaded from: classes4.dex */
+public class StatsController extends BaseController {
+    private static final int TYPES_COUNT = 7;
+    public static final int TYPE_AUDIOS = 3;
+    public static final int TYPE_CALLS = 0;
+    public static final int TYPE_FILES = 5;
+    public static final int TYPE_MESSAGES = 1;
+    public static final int TYPE_MOBILE = 0;
+    public static final int TYPE_PHOTOS = 4;
+    public static final int TYPE_ROAMING = 2;
+    public static final int TYPE_TOTAL = 6;
+    public static final int TYPE_VIDEOS = 2;
+    public static final int TYPE_WIFI = 1;
+    private byte[] buffer;
+    private int[] callsTotalTime;
+    private long lastInternalStatsSaveTime;
+    private long[][] receivedBytes;
+    private int[][] receivedItems;
+    private long[] resetStatsDate;
+    private Runnable saveRunnable;
+    private long[][] sentBytes;
+    private int[][] sentItems;
+    private RandomAccessFile statsFile;
+    private static DispatchQueue statsSaveQueue = new DispatchQueue("statsSaveQueue");
+    private static final ThreadLocal<Long> lastStatsSaveTime = new ThreadLocal<Long>() { // from class: org.rbmain.messenger.StatsController.1
+        /* JADX INFO: Access modifiers changed from: protected */
+        /* JADX WARN: Can't rename method to resolve collision */
+        @Override // java.lang.ThreadLocal
+        public Long initialValue() {
+            return Long.valueOf(System.currentTimeMillis() - 1000);
+        }
+    };
+    private static volatile StatsController[] Instance = new StatsController[3];
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public byte[] intToBytes(int i) {
+        byte[] bArr = this.buffer;
+        bArr[0] = (byte) (i >>> 24);
+        bArr[1] = (byte) (i >>> 16);
+        bArr[2] = (byte) (i >>> 8);
+        bArr[3] = (byte) i;
+        return bArr;
+    }
+
+    private int bytesToInt(byte[] bArr) {
+        return (bArr[3] & 255) | (bArr[0] << 24) | ((bArr[1] & 255) << 16) | ((bArr[2] & 255) << 8);
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public byte[] longToBytes(long j) {
+        byte[] bArr = this.buffer;
+        bArr[0] = (byte) (j >>> 56);
+        bArr[1] = (byte) (j >>> 48);
+        bArr[2] = (byte) (j >>> 40);
+        bArr[3] = (byte) (j >>> 32);
+        bArr[4] = (byte) (j >>> 24);
+        bArr[5] = (byte) (j >>> 16);
+        bArr[6] = (byte) (j >>> 8);
+        bArr[7] = (byte) j;
+        return bArr;
+    }
+
+    private long bytesToLong(byte[] bArr) {
+        return ((bArr[0] & 255) << 56) | ((bArr[1] & 255) << 48) | ((bArr[2] & 255) << 40) | ((bArr[3] & 255) << 32) | ((bArr[4] & 255) << 24) | ((bArr[5] & 255) << 16) | ((bArr[6] & 255) << 8) | (255 & bArr[7]);
+    }
+
+    public static StatsController getInstance(int i) {
+        StatsController statsController = Instance[i];
+        if (statsController == null) {
+            synchronized (StatsController.class) {
+                statsController = Instance[i];
+                if (statsController == null) {
+                    StatsController[] statsControllerArr = Instance;
+                    StatsController statsController2 = new StatsController(i);
+                    statsControllerArr[i] = statsController2;
+                    statsController = statsController2;
+                }
+            }
+        }
+        return statsController;
+    }
+
+    private StatsController(int i) throws IOException {
+        boolean z;
+        SharedPreferences sharedPreferences;
+        RandomAccessFile randomAccessFile;
+        super(i);
+        this.buffer = new byte[8];
+        this.sentBytes = (long[][]) Array.newInstance((Class<?>) long.class, 3, 7);
+        this.receivedBytes = (long[][]) Array.newInstance((Class<?>) long.class, 3, 7);
+        this.sentItems = (int[][]) Array.newInstance((Class<?>) int.class, 3, 7);
+        this.receivedItems = (int[][]) Array.newInstance((Class<?>) int.class, 3, 7);
+        this.resetStatsDate = new long[3];
+        this.callsTotalTime = new int[3];
+        this.saveRunnable = new Runnable() { // from class: org.rbmain.messenger.StatsController.2
+            @Override // java.lang.Runnable
+            public void run() throws IOException {
+                long jCurrentTimeMillis = System.currentTimeMillis();
+                if (Math.abs(jCurrentTimeMillis - StatsController.this.lastInternalStatsSaveTime) < 2000) {
+                    return;
+                }
+                StatsController.this.lastInternalStatsSaveTime = jCurrentTimeMillis;
+                try {
+                    StatsController.this.statsFile.seek(0L);
+                    for (int i2 = 0; i2 < 3; i2++) {
+                        for (int i3 = 0; i3 < 7; i3++) {
+                            RandomAccessFile randomAccessFile2 = StatsController.this.statsFile;
+                            StatsController statsController = StatsController.this;
+                            randomAccessFile2.write(statsController.longToBytes(statsController.sentBytes[i2][i3]), 0, 8);
+                            RandomAccessFile randomAccessFile3 = StatsController.this.statsFile;
+                            StatsController statsController2 = StatsController.this;
+                            randomAccessFile3.write(statsController2.longToBytes(statsController2.receivedBytes[i2][i3]), 0, 8);
+                            RandomAccessFile randomAccessFile4 = StatsController.this.statsFile;
+                            StatsController statsController3 = StatsController.this;
+                            randomAccessFile4.write(statsController3.intToBytes(statsController3.sentItems[i2][i3]), 0, 4);
+                            RandomAccessFile randomAccessFile5 = StatsController.this.statsFile;
+                            StatsController statsController4 = StatsController.this;
+                            randomAccessFile5.write(statsController4.intToBytes(statsController4.receivedItems[i2][i3]), 0, 4);
+                        }
+                        RandomAccessFile randomAccessFile6 = StatsController.this.statsFile;
+                        StatsController statsController5 = StatsController.this;
+                        randomAccessFile6.write(statsController5.intToBytes(statsController5.callsTotalTime[i2]), 0, 4);
+                        RandomAccessFile randomAccessFile7 = StatsController.this.statsFile;
+                        StatsController statsController6 = StatsController.this;
+                        randomAccessFile7.write(statsController6.longToBytes(statsController6.resetStatsDate[i2]), 0, 8);
+                    }
+                    StatsController.this.statsFile.getFD().sync();
+                } catch (Exception unused) {
+                }
+            }
+        };
+        File filesDirFixed = ApplicationLoader.getFilesDirFixed();
+        if (i != 0) {
+            filesDirFixed = new File(ApplicationLoader.getFilesDirFixed(), "account" + i + "/");
+            filesDirFixed.mkdirs();
+        }
+        try {
+            randomAccessFile = new RandomAccessFile(new File(filesDirFixed, "stats2.dat"), "rw");
+            this.statsFile = randomAccessFile;
+        } catch (Exception unused) {
+        }
+        if (randomAccessFile.length() > 0) {
+            boolean z2 = false;
+            for (int i2 = 0; i2 < 3; i2++) {
+                for (int i3 = 0; i3 < 7; i3++) {
+                    this.statsFile.readFully(this.buffer, 0, 8);
+                    this.sentBytes[i2][i3] = bytesToLong(this.buffer);
+                    this.statsFile.readFully(this.buffer, 0, 8);
+                    this.receivedBytes[i2][i3] = bytesToLong(this.buffer);
+                    this.statsFile.readFully(this.buffer, 0, 4);
+                    this.sentItems[i2][i3] = bytesToInt(this.buffer);
+                    this.statsFile.readFully(this.buffer, 0, 4);
+                    this.receivedItems[i2][i3] = bytesToInt(this.buffer);
+                }
+                this.statsFile.readFully(this.buffer, 0, 4);
+                this.callsTotalTime[i2] = bytesToInt(this.buffer);
+                this.statsFile.readFully(this.buffer, 0, 8);
+                this.resetStatsDate[i2] = bytesToLong(this.buffer);
+                long[] jArr = this.resetStatsDate;
+                if (jArr[i2] == 0) {
+                    jArr[i2] = System.currentTimeMillis();
+                    z2 = true;
+                }
+            }
+            if (z2) {
+                saveStats();
+            }
+            z = false;
+        } else {
+            z = true;
+        }
+        if (z) {
+            if (i == 0) {
+                sharedPreferences = ApplicationLoader.applicationContext.getSharedPreferences("stats", 0);
+            } else {
+                sharedPreferences = ApplicationLoader.applicationContext.getSharedPreferences("stats" + i, 0);
+            }
+            boolean z3 = false;
+            for (int i4 = 0; i4 < 3; i4++) {
+                this.callsTotalTime[i4] = sharedPreferences.getInt("callsTotalTime" + i4, 0);
+                this.resetStatsDate[i4] = sharedPreferences.getLong("resetStatsDate" + i4, 0L);
+                for (int i5 = 0; i5 < 7; i5++) {
+                    this.sentBytes[i4][i5] = sharedPreferences.getLong("sentBytes" + i4 + "_" + i5, 0L);
+                    this.receivedBytes[i4][i5] = sharedPreferences.getLong("receivedBytes" + i4 + "_" + i5, 0L);
+                    this.sentItems[i4][i5] = sharedPreferences.getInt("sentItems" + i4 + "_" + i5, 0);
+                    this.receivedItems[i4][i5] = sharedPreferences.getInt("receivedItems" + i4 + "_" + i5, 0);
+                }
+                long[] jArr2 = this.resetStatsDate;
+                if (jArr2[i4] == 0) {
+                    jArr2[i4] = System.currentTimeMillis();
+                    z3 = true;
+                }
+            }
+            if (z3) {
+                saveStats();
+            }
+        }
+    }
+
+    public void incrementReceivedItemsCount(int i, int i2, int i3) {
+        int[] iArr = this.receivedItems[i];
+        iArr[i2] = iArr[i2] + i3;
+        saveStats();
+    }
+
+    public void incrementSentItemsCount(int i, int i2, int i3) {
+        int[] iArr = this.sentItems[i];
+        iArr[i2] = iArr[i2] + i3;
+        saveStats();
+    }
+
+    public void incrementReceivedBytesCount(int i, int i2, long j) {
+        long[] jArr = this.receivedBytes[i];
+        jArr[i2] = jArr[i2] + j;
+        saveStats();
+    }
+
+    public void incrementSentBytesCount(int i, int i2, long j) {
+        long[] jArr = this.sentBytes[i];
+        jArr[i2] = jArr[i2] + j;
+        saveStats();
+    }
+
+    public void incrementTotalCallsTime(int i, int i2) {
+        int[] iArr = this.callsTotalTime;
+        iArr[i] = iArr[i] + i2;
+        saveStats();
+    }
+
+    public int getRecivedItemsCount(int i, int i2) {
+        return this.receivedItems[i][i2];
+    }
+
+    public int getSentItemsCount(int i, int i2) {
+        return this.sentItems[i][i2];
+    }
+
+    public long getSentBytesCount(int i, int i2) {
+        if (i2 == 1) {
+            long[][] jArr = this.sentBytes;
+            return ((((jArr[i][6] - jArr[i][5]) - jArr[i][3]) - jArr[i][2]) - jArr[i][4]) - jArr[i][0];
+        }
+        return this.sentBytes[i][i2];
+    }
+
+    public long getReceivedBytesCount(int i, int i2) {
+        if (i2 == 1) {
+            long[][] jArr = this.receivedBytes;
+            return ((((jArr[i][6] - jArr[i][5]) - jArr[i][3]) - jArr[i][2]) - jArr[i][4]) - jArr[i][0];
+        }
+        return this.receivedBytes[i][i2];
+    }
+
+    public int getCallsTotalTime(int i) {
+        return this.callsTotalTime[i];
+    }
+
+    public long getResetStatsDate(int i) {
+        return this.resetStatsDate[i];
+    }
+
+    public void resetStats(int i) {
+        this.resetStatsDate[i] = System.currentTimeMillis();
+        for (int i2 = 0; i2 < 7; i2++) {
+            this.sentBytes[i][i2] = 0;
+            this.receivedBytes[i][i2] = 0;
+            this.sentItems[i][i2] = 0;
+            this.receivedItems[i][i2] = 0;
+        }
+        this.callsTotalTime[i] = 0;
+        saveStats();
+    }
+
+    private void saveStats() {
+        long jCurrentTimeMillis = System.currentTimeMillis();
+        ThreadLocal<Long> threadLocal = lastStatsSaveTime;
+        if (Math.abs(jCurrentTimeMillis - threadLocal.get().longValue()) >= 2000) {
+            threadLocal.set(Long.valueOf(jCurrentTimeMillis));
+            statsSaveQueue.postRunnable(this.saveRunnable);
+        }
+    }
+}

@@ -1,0 +1,373 @@
+package org.rbmain.ui.Components;
+
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
+import android.os.Build;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import androidx.viewpager.widget.ViewPager;
+import org.rbmain.messenger.AndroidUtilities;
+import org.rbmain.ui.ActionBar.Theme;
+
+/* loaded from: classes5.dex */
+public class PagerSlidingTabStrip extends HorizontalScrollView {
+    private int currentPosition;
+    private float currentPositionOffset;
+    private LinearLayout.LayoutParams defaultTabLayoutParams;
+    public ViewPager.OnPageChangeListener delegatePageListener;
+    private int dividerPadding;
+    private int indicatorColor;
+    private int indicatorHeight;
+    private int lastScrollX;
+    private final PageListener pageListener;
+    private ViewPager pager;
+    private Paint rectPaint;
+    private int scrollOffset;
+    private boolean shouldExpand;
+    private int tabCount;
+    private int tabPadding;
+    private LinearLayout tabsContainer;
+    private int underlineColor;
+    private int underlineHeight;
+
+    public interface IconTabProvider {
+        boolean canScrollToTab(int i);
+
+        void customOnDraw(Canvas canvas, int i);
+
+        Drawable getPageIconDrawable(int i);
+    }
+
+    public PagerSlidingTabStrip(Context context) {
+        super(context);
+        this.pageListener = new PageListener();
+        this.currentPosition = 0;
+        this.currentPositionOffset = 0.0f;
+        this.indicatorColor = -10066330;
+        this.underlineColor = 436207616;
+        this.shouldExpand = false;
+        this.scrollOffset = AndroidUtilities.dp(52.0f);
+        this.indicatorHeight = AndroidUtilities.dp(8.0f);
+        this.underlineHeight = AndroidUtilities.dp(2.0f);
+        this.dividerPadding = AndroidUtilities.dp(12.0f);
+        this.tabPadding = AndroidUtilities.dp(24.0f);
+        this.lastScrollX = 0;
+        setFillViewport(true);
+        setWillNotDraw(false);
+        LinearLayout linearLayout = new LinearLayout(context);
+        this.tabsContainer = linearLayout;
+        linearLayout.setOrientation(0);
+        this.tabsContainer.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+        addView(this.tabsContainer);
+        Paint paint = new Paint();
+        this.rectPaint = paint;
+        paint.setAntiAlias(true);
+        this.rectPaint.setStyle(Paint.Style.FILL);
+        this.defaultTabLayoutParams = new LinearLayout.LayoutParams(-2, -1);
+    }
+
+    public void setViewPager(ViewPager viewPager) {
+        this.pager = viewPager;
+        if (viewPager.getAdapter() == null) {
+            throw new IllegalStateException("ViewPager does not have adapter instance.");
+        }
+        viewPager.setOnPageChangeListener(this.pageListener);
+        notifyDataSetChanged();
+    }
+
+    public void setOnPageChangeListener(ViewPager.OnPageChangeListener onPageChangeListener) {
+        this.delegatePageListener = onPageChangeListener;
+    }
+
+    public void notifyDataSetChanged() {
+        this.tabsContainer.removeAllViews();
+        this.tabCount = this.pager.getAdapter().getCount();
+        for (int i = 0; i < this.tabCount; i++) {
+            if (this.pager.getAdapter() instanceof IconTabProvider) {
+                addIconTab(i, ((IconTabProvider) this.pager.getAdapter()).getPageIconDrawable(i), this.pager.getAdapter().getPageTitle(i));
+            }
+        }
+        updateTabStyles();
+        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() { // from class: org.rbmain.ui.Components.PagerSlidingTabStrip.1
+            @Override // android.view.ViewTreeObserver.OnGlobalLayoutListener
+            public void onGlobalLayout() {
+                PagerSlidingTabStrip.this.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                PagerSlidingTabStrip pagerSlidingTabStrip = PagerSlidingTabStrip.this;
+                pagerSlidingTabStrip.currentPosition = pagerSlidingTabStrip.pager.getCurrentItem();
+                PagerSlidingTabStrip pagerSlidingTabStrip2 = PagerSlidingTabStrip.this;
+                pagerSlidingTabStrip2.scrollToChild(pagerSlidingTabStrip2.currentPosition, 0);
+            }
+        });
+    }
+
+    public View getTab(int i) {
+        if (i < 0 || i >= this.tabsContainer.getChildCount()) {
+            return null;
+        }
+        return this.tabsContainer.getChildAt(i);
+    }
+
+    private void addIconTab(final int i, Drawable drawable, CharSequence charSequence) {
+        ImageView imageView = new ImageView(getContext()) { // from class: org.rbmain.ui.Components.PagerSlidingTabStrip.2
+            @Override // android.widget.ImageView, android.view.View
+            protected void onDraw(Canvas canvas) {
+                super.onDraw(canvas);
+                if (PagerSlidingTabStrip.this.pager.getAdapter() instanceof IconTabProvider) {
+                    ((IconTabProvider) PagerSlidingTabStrip.this.pager.getAdapter()).customOnDraw(canvas, i);
+                }
+            }
+
+            @Override // android.widget.ImageView, android.view.View
+            public void setSelected(boolean z) {
+                super.setSelected(z);
+                Drawable background = getBackground();
+                if (Build.VERSION.SDK_INT < 21 || background == null) {
+                    return;
+                }
+                int color = Theme.getColor(z ? Theme.key_chat_emojiPanelIconSelected : Theme.key_chat_emojiBottomPanelIcon);
+                Theme.setSelectorDrawableColor(background, Color.argb(30, Color.red(color), Color.green(color), Color.blue(color)), true);
+            }
+        };
+        imageView.setFocusable(true);
+        if (Build.VERSION.SDK_INT >= 21) {
+            RippleDrawable rippleDrawable = (RippleDrawable) Theme.createSelectorDrawable(Theme.getColor(Theme.key_chat_emojiBottomPanelIcon));
+            Theme.setRippleDrawableForceSoftware(rippleDrawable);
+            imageView.setBackground(rippleDrawable);
+        }
+        imageView.setImageDrawable(drawable);
+        imageView.setScaleType(ImageView.ScaleType.CENTER);
+        imageView.setOnClickListener(new View.OnClickListener() { // from class: org.rbmain.ui.Components.PagerSlidingTabStrip$$ExternalSyntheticLambda0
+            @Override // android.view.View.OnClickListener
+            public final void onClick(View view) throws Resources.NotFoundException {
+                this.f$0.lambda$addIconTab$0(i, view);
+            }
+        });
+        this.tabsContainer.addView(imageView);
+        imageView.setSelected(i == this.currentPosition);
+        imageView.setContentDescription(charSequence);
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$addIconTab$0(int i, View view) throws Resources.NotFoundException {
+        if (!(this.pager.getAdapter() instanceof IconTabProvider) || ((IconTabProvider) this.pager.getAdapter()).canScrollToTab(i)) {
+            this.pager.setCurrentItem(i, false);
+        }
+    }
+
+    private void updateTabStyles() {
+        for (int i = 0; i < this.tabCount; i++) {
+            View childAt = this.tabsContainer.getChildAt(i);
+            childAt.setLayoutParams(this.defaultTabLayoutParams);
+            if (this.shouldExpand) {
+                childAt.setPadding(0, 0, 0, 0);
+                childAt.setLayoutParams(new LinearLayout.LayoutParams(-1, -1, 1.0f));
+            } else {
+                int i2 = this.tabPadding;
+                childAt.setPadding(i2, 0, i2, 0);
+            }
+        }
+    }
+
+    @Override // android.widget.HorizontalScrollView, android.widget.FrameLayout, android.view.View
+    protected void onMeasure(int i, int i2) {
+        super.onMeasure(i, i2);
+        if (!this.shouldExpand || View.MeasureSpec.getMode(i) == 0) {
+            return;
+        }
+        this.tabsContainer.measure(getMeasuredWidth() | 1073741824, i2);
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public void scrollToChild(int i, int i2) {
+        if (this.tabCount == 0) {
+            return;
+        }
+        int left = this.tabsContainer.getChildAt(i).getLeft() + i2;
+        if (i > 0 || i2 > 0) {
+            left -= this.scrollOffset;
+        }
+        if (left != this.lastScrollX) {
+            this.lastScrollX = left;
+            scrollTo(left, 0);
+        }
+    }
+
+    @Override // android.view.View
+    protected void onDraw(Canvas canvas) {
+        int i;
+        super.onDraw(canvas);
+        if (isInEditMode() || this.tabCount == 0) {
+            return;
+        }
+        int height = getHeight();
+        if (this.underlineHeight != 0) {
+            this.rectPaint.setColor(this.underlineColor);
+            canvas.drawRect(0.0f, height - this.underlineHeight, this.tabsContainer.getWidth(), height, this.rectPaint);
+        }
+        View childAt = this.tabsContainer.getChildAt(this.currentPosition);
+        float left = childAt.getLeft();
+        float right = childAt.getRight();
+        if (this.currentPositionOffset > 0.0f && (i = this.currentPosition) < this.tabCount - 1) {
+            View childAt2 = this.tabsContainer.getChildAt(i + 1);
+            float left2 = childAt2.getLeft();
+            float right2 = childAt2.getRight();
+            float f = this.currentPositionOffset;
+            left = (left2 * f) + ((1.0f - f) * left);
+            right = (right2 * f) + ((1.0f - f) * right);
+        }
+        float f2 = right;
+        float f3 = left;
+        if (this.indicatorHeight != 0) {
+            this.rectPaint.setColor(this.indicatorColor);
+            canvas.drawRect(f3, height - this.indicatorHeight, f2, height, this.rectPaint);
+        }
+    }
+
+    private class PageListener implements ViewPager.OnPageChangeListener {
+        private PageListener() {
+        }
+
+        @Override // androidx.viewpager.widget.ViewPager.OnPageChangeListener
+        public void onPageScrolled(int i, float f, int i2) {
+            PagerSlidingTabStrip.this.currentPosition = i;
+            PagerSlidingTabStrip.this.currentPositionOffset = f;
+            PagerSlidingTabStrip.this.scrollToChild(i, (int) (r0.tabsContainer.getChildAt(i).getWidth() * f));
+            PagerSlidingTabStrip.this.invalidate();
+            ViewPager.OnPageChangeListener onPageChangeListener = PagerSlidingTabStrip.this.delegatePageListener;
+            if (onPageChangeListener != null) {
+                onPageChangeListener.onPageScrolled(i, f, i2);
+            }
+        }
+
+        @Override // androidx.viewpager.widget.ViewPager.OnPageChangeListener
+        public void onPageScrollStateChanged(int i) {
+            if (i == 0) {
+                PagerSlidingTabStrip pagerSlidingTabStrip = PagerSlidingTabStrip.this;
+                pagerSlidingTabStrip.scrollToChild(pagerSlidingTabStrip.pager.getCurrentItem(), 0);
+            }
+            ViewPager.OnPageChangeListener onPageChangeListener = PagerSlidingTabStrip.this.delegatePageListener;
+            if (onPageChangeListener != null) {
+                onPageChangeListener.onPageScrollStateChanged(i);
+            }
+        }
+
+        @Override // androidx.viewpager.widget.ViewPager.OnPageChangeListener
+        public void onPageSelected(int i) {
+            ViewPager.OnPageChangeListener onPageChangeListener = PagerSlidingTabStrip.this.delegatePageListener;
+            if (onPageChangeListener != null) {
+                onPageChangeListener.onPageSelected(i);
+            }
+            int i2 = 0;
+            while (i2 < PagerSlidingTabStrip.this.tabsContainer.getChildCount()) {
+                PagerSlidingTabStrip.this.tabsContainer.getChildAt(i2).setSelected(i2 == i);
+                i2++;
+            }
+        }
+    }
+
+    @Override // android.widget.HorizontalScrollView, android.view.View
+    public void onSizeChanged(int i, int i2, int i3, int i4) {
+        if (this.shouldExpand) {
+            return;
+        }
+        post(new Runnable() { // from class: org.rbmain.ui.Components.PagerSlidingTabStrip$$ExternalSyntheticLambda1
+            @Override // java.lang.Runnable
+            public final void run() {
+                this.f$0.notifyDataSetChanged();
+            }
+        });
+    }
+
+    public void setIndicatorColor(int i) {
+        this.indicatorColor = i;
+        invalidate();
+    }
+
+    public void setIndicatorColorResource(int i) {
+        this.indicatorColor = getResources().getColor(i);
+        invalidate();
+    }
+
+    public int getIndicatorColor() {
+        return this.indicatorColor;
+    }
+
+    public void setIndicatorHeight(int i) {
+        this.indicatorHeight = i;
+        invalidate();
+    }
+
+    public int getIndicatorHeight() {
+        return this.indicatorHeight;
+    }
+
+    public void setUnderlineColor(int i) {
+        this.underlineColor = i;
+        invalidate();
+    }
+
+    public void setUnderlineColorResource(int i) {
+        this.underlineColor = getResources().getColor(i);
+        invalidate();
+    }
+
+    public int getUnderlineColor() {
+        return this.underlineColor;
+    }
+
+    public void setUnderlineHeight(int i) {
+        this.underlineHeight = i;
+        invalidate();
+    }
+
+    public int getUnderlineHeight() {
+        return this.underlineHeight;
+    }
+
+    public void setDividerPadding(int i) {
+        this.dividerPadding = i;
+        invalidate();
+    }
+
+    public int getDividerPadding() {
+        return this.dividerPadding;
+    }
+
+    public void setScrollOffset(int i) {
+        this.scrollOffset = i;
+        invalidate();
+    }
+
+    public int getScrollOffset() {
+        return this.scrollOffset;
+    }
+
+    public void setShouldExpand(boolean z) {
+        this.shouldExpand = z;
+        this.tabsContainer.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+        updateTabStyles();
+        requestLayout();
+    }
+
+    public boolean getShouldExpand() {
+        return this.shouldExpand;
+    }
+
+    public void setTabPaddingLeftRight(int i) {
+        this.tabPadding = i;
+        updateTabStyles();
+    }
+
+    public int getTabPaddingLeftRight() {
+        return this.tabPadding;
+    }
+}

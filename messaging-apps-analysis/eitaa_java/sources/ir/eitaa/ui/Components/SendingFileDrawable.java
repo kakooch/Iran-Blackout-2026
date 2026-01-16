@@ -1,0 +1,122 @@
+package ir.eitaa.ui.Components;
+
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import ir.eitaa.messenger.AndroidUtilities;
+import ir.eitaa.ui.ActionBar.Theme;
+
+/* loaded from: classes3.dex */
+public class SendingFileDrawable extends StatusDrawable {
+    Paint currentPaint;
+    private float progress;
+    private boolean isChat = false;
+    private long lastUpdateTime = 0;
+    private boolean started = false;
+
+    @Override // android.graphics.drawable.Drawable
+    public int getOpacity() {
+        return 0;
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public void setAlpha(int alpha) {
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public void setColorFilter(ColorFilter cf) {
+    }
+
+    public SendingFileDrawable(boolean createPaint) {
+        if (createPaint) {
+            Paint paint = new Paint(1);
+            this.currentPaint = paint;
+            paint.setStyle(Paint.Style.STROKE);
+            this.currentPaint.setStrokeCap(Paint.Cap.ROUND);
+            this.currentPaint.setStrokeWidth(AndroidUtilities.dp(2.0f));
+        }
+    }
+
+    @Override // ir.eitaa.ui.Components.StatusDrawable
+    public void setColor(int color) {
+        Paint paint = this.currentPaint;
+        if (paint != null) {
+            paint.setColor(color);
+        }
+    }
+
+    @Override // ir.eitaa.ui.Components.StatusDrawable
+    public void setIsChat(boolean value) {
+        this.isChat = value;
+    }
+
+    private void update() {
+        long jCurrentTimeMillis = System.currentTimeMillis();
+        long j = jCurrentTimeMillis - this.lastUpdateTime;
+        this.lastUpdateTime = jCurrentTimeMillis;
+        if (j > 50) {
+            j = 50;
+        }
+        this.progress += j / 500.0f;
+        while (true) {
+            float f = this.progress;
+            if (f > 1.0f) {
+                this.progress = f - 1.0f;
+            } else {
+                invalidateSelf();
+                return;
+            }
+        }
+    }
+
+    @Override // ir.eitaa.ui.Components.StatusDrawable
+    public void start() {
+        this.lastUpdateTime = System.currentTimeMillis();
+        this.started = true;
+        invalidateSelf();
+    }
+
+    @Override // ir.eitaa.ui.Components.StatusDrawable
+    public void stop() {
+        this.started = false;
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public void draw(Canvas canvas) {
+        Paint paint = this.currentPaint;
+        if (paint == null) {
+            paint = Theme.chat_statusRecordPaint;
+        }
+        for (int i = 0; i < 3; i++) {
+            if (i == 0) {
+                paint.setAlpha((int) (this.progress * 255.0f));
+            } else if (i == 2) {
+                paint.setAlpha((int) ((1.0f - this.progress) * 255.0f));
+            } else {
+                paint.setAlpha(255);
+            }
+            float fDp = (AndroidUtilities.dp(5.0f) * i) + (AndroidUtilities.dp(5.0f) * this.progress);
+            float f = 7.0f;
+            canvas.drawLine(fDp, AndroidUtilities.dp(this.isChat ? 3.0f : 4.0f), fDp + AndroidUtilities.dp(4.0f), AndroidUtilities.dp(this.isChat ? 7.0f : 8.0f), paint);
+            float fDp2 = AndroidUtilities.dp(this.isChat ? 11.0f : 12.0f);
+            float fDp3 = fDp + AndroidUtilities.dp(4.0f);
+            if (!this.isChat) {
+                f = 8.0f;
+            }
+            canvas.drawLine(fDp, fDp2, fDp3, AndroidUtilities.dp(f), paint);
+        }
+        if (this.started) {
+            update();
+        }
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public int getIntrinsicWidth() {
+        return AndroidUtilities.dp(18.0f);
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public int getIntrinsicHeight() {
+        return AndroidUtilities.dp(14.0f);
+    }
+}

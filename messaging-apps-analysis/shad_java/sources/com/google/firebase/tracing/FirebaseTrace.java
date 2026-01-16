@@ -1,0 +1,19 @@
+package com.google.firebase.tracing;
+
+import android.os.Build;
+import android.os.Trace;
+
+/* loaded from: classes3.dex */
+public final class FirebaseTrace {
+    public static void pushTrace(String str) {
+        if (Build.VERSION.SDK_INT >= 18) {
+            Trace.beginSection(str);
+        }
+    }
+
+    public static void popTrace() {
+        if (Build.VERSION.SDK_INT >= 18) {
+            Trace.endSection();
+        }
+    }
+}

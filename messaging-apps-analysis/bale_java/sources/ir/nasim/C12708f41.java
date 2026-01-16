@@ -1,0 +1,34 @@
+package ir.nasim;
+
+/* renamed from: ir.nasim.f41, reason: case insensitive filesystem */
+/* loaded from: classes6.dex */
+public final class C12708f41 {
+    public static final C12708f41 a = new C12708f41();
+    public static InterfaceC14603iB2 b = AbstractC19242q11.c(-704053044, false, a.a);
+
+    /* renamed from: ir.nasim.f41$a */
+    static final class a implements InterfaceC14603iB2 {
+        public static final a a = new a();
+
+        a() {
+        }
+
+        public final void a(InterfaceC22053ub1 interfaceC22053ub1, int i) {
+            if ((i & 3) == 2 && interfaceC22053ub1.k()) {
+                interfaceC22053ub1.L();
+            } else {
+                AbstractC13313g10.x(interfaceC22053ub1, 0);
+            }
+        }
+
+        @Override // ir.nasim.InterfaceC14603iB2
+        public /* bridge */ /* synthetic */ Object invoke(Object obj, Object obj2) {
+            a((InterfaceC22053ub1) obj, ((Number) obj2).intValue());
+            return C19938rB7.a;
+        }
+    }
+
+    public final InterfaceC14603iB2 a() {
+        return b;
+    }
+}

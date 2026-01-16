@@ -1,0 +1,139 @@
+package com.google.android.exoplayer2.util;
+
+import android.net.Uri;
+import android.text.TextUtils;
+
+/* loaded from: classes.dex */
+public final class UriUtil {
+    public static Uri resolveToUri(String baseUri, String referenceUri) {
+        return Uri.parse(resolve(baseUri, referenceUri));
+    }
+
+    public static String resolve(String baseUri, String referenceUri) {
+        StringBuilder sb = new StringBuilder();
+        if (baseUri == null) {
+            baseUri = "";
+        }
+        if (referenceUri == null) {
+            referenceUri = "";
+        }
+        int[] uriIndices = getUriIndices(referenceUri);
+        if (uriIndices[0] != -1) {
+            sb.append(referenceUri);
+            removeDotSegments(sb, uriIndices[1], uriIndices[2]);
+            return sb.toString();
+        }
+        int[] uriIndices2 = getUriIndices(baseUri);
+        if (uriIndices[3] == 0) {
+            sb.append((CharSequence) baseUri, 0, uriIndices2[3]);
+            sb.append(referenceUri);
+            return sb.toString();
+        }
+        if (uriIndices[2] == 0) {
+            sb.append((CharSequence) baseUri, 0, uriIndices2[2]);
+            sb.append(referenceUri);
+            return sb.toString();
+        }
+        if (uriIndices[1] != 0) {
+            int i = uriIndices2[0] + 1;
+            sb.append((CharSequence) baseUri, 0, i);
+            sb.append(referenceUri);
+            return removeDotSegments(sb, uriIndices[1] + i, i + uriIndices[2]);
+        }
+        if (referenceUri.charAt(uriIndices[1]) == '/') {
+            sb.append((CharSequence) baseUri, 0, uriIndices2[1]);
+            sb.append(referenceUri);
+            return removeDotSegments(sb, uriIndices2[1], uriIndices2[1] + uriIndices[2]);
+        }
+        if (uriIndices2[0] + 2 < uriIndices2[1] && uriIndices2[1] == uriIndices2[2]) {
+            sb.append((CharSequence) baseUri, 0, uriIndices2[1]);
+            sb.append('/');
+            sb.append(referenceUri);
+            return removeDotSegments(sb, uriIndices2[1], uriIndices2[1] + uriIndices[2] + 1);
+        }
+        int iLastIndexOf = baseUri.lastIndexOf(47, uriIndices2[2] - 1);
+        int i2 = iLastIndexOf == -1 ? uriIndices2[1] : iLastIndexOf + 1;
+        sb.append((CharSequence) baseUri, 0, i2);
+        sb.append(referenceUri);
+        return removeDotSegments(sb, uriIndices2[1], i2 + uriIndices[2]);
+    }
+
+    private static String removeDotSegments(StringBuilder uri, int offset, int limit) {
+        int i;
+        int iLastIndexOf;
+        if (offset >= limit) {
+            return uri.toString();
+        }
+        if (uri.charAt(offset) == '/') {
+            offset++;
+        }
+        int i2 = offset;
+        int i3 = i2;
+        while (i2 <= limit) {
+            if (i2 == limit) {
+                i = i2;
+            } else if (uri.charAt(i2) == '/') {
+                i = i2 + 1;
+            } else {
+                i2++;
+            }
+            int i4 = i3 + 1;
+            if (i2 == i4 && uri.charAt(i3) == '.') {
+                uri.delete(i3, i);
+                limit -= i - i3;
+            } else {
+                if (i2 == i3 + 2 && uri.charAt(i3) == '.' && uri.charAt(i4) == '.') {
+                    iLastIndexOf = uri.lastIndexOf("/", i3 - 2) + 1;
+                    int i5 = iLastIndexOf > offset ? iLastIndexOf : offset;
+                    uri.delete(i5, i);
+                    limit -= i - i5;
+                } else {
+                    iLastIndexOf = i2 + 1;
+                }
+                i3 = iLastIndexOf;
+            }
+            i2 = i3;
+        }
+        return uri.toString();
+    }
+
+    private static int[] getUriIndices(String uriString) {
+        int iIndexOf;
+        int[] iArr = new int[4];
+        if (TextUtils.isEmpty(uriString)) {
+            iArr[0] = -1;
+            return iArr;
+        }
+        int length = uriString.length();
+        int iIndexOf2 = uriString.indexOf(35);
+        if (iIndexOf2 != -1) {
+            length = iIndexOf2;
+        }
+        int iIndexOf3 = uriString.indexOf(63);
+        if (iIndexOf3 == -1 || iIndexOf3 > length) {
+            iIndexOf3 = length;
+        }
+        int iIndexOf4 = uriString.indexOf(47);
+        if (iIndexOf4 == -1 || iIndexOf4 > iIndexOf3) {
+            iIndexOf4 = iIndexOf3;
+        }
+        int iIndexOf5 = uriString.indexOf(58);
+        if (iIndexOf5 > iIndexOf4) {
+            iIndexOf5 = -1;
+        }
+        int i = iIndexOf5 + 2;
+        if (i < iIndexOf3 && uriString.charAt(iIndexOf5 + 1) == '/' && uriString.charAt(i) == '/') {
+            iIndexOf = uriString.indexOf(47, iIndexOf5 + 3);
+            if (iIndexOf == -1 || iIndexOf > iIndexOf3) {
+                iIndexOf = iIndexOf3;
+            }
+        } else {
+            iIndexOf = iIndexOf5 + 1;
+        }
+        iArr[0] = iIndexOf5;
+        iArr[1] = iIndexOf;
+        iArr[2] = iIndexOf3;
+        iArr[3] = length;
+        return iArr;
+    }
+}

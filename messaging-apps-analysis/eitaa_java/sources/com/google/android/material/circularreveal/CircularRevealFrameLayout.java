@@ -1,0 +1,68 @@
+package com.google.android.material.circularreveal;
+
+import android.annotation.SuppressLint;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.widget.FrameLayout;
+import com.google.android.material.circularreveal.CircularRevealWidget;
+
+/* loaded from: classes.dex */
+public class CircularRevealFrameLayout extends FrameLayout implements CircularRevealWidget {
+    private final CircularRevealHelper helper;
+
+    @Override // com.google.android.material.circularreveal.CircularRevealWidget
+    public void buildCircularRevealCache() {
+        throw null;
+    }
+
+    @Override // com.google.android.material.circularreveal.CircularRevealWidget
+    public void destroyCircularRevealCache() {
+        throw null;
+    }
+
+    @Override // com.google.android.material.circularreveal.CircularRevealWidget
+    public CircularRevealWidget.RevealInfo getRevealInfo() {
+        throw null;
+    }
+
+    @Override // com.google.android.material.circularreveal.CircularRevealWidget
+    public void setRevealInfo(CircularRevealWidget.RevealInfo revealInfo) {
+        throw null;
+    }
+
+    @Override // com.google.android.material.circularreveal.CircularRevealWidget
+    public int getCircularRevealScrimColor() {
+        throw null;
+    }
+
+    @Override // com.google.android.material.circularreveal.CircularRevealWidget
+    public void setCircularRevealScrimColor(int i) {
+        throw null;
+    }
+
+    public Drawable getCircularRevealOverlayDrawable() {
+        throw null;
+    }
+
+    @Override // com.google.android.material.circularreveal.CircularRevealWidget
+    public void setCircularRevealOverlayDrawable(Drawable drawable) {
+        throw null;
+    }
+
+    @Override // android.view.View
+    @SuppressLint({"MissingSuperCall"})
+    public void draw(Canvas canvas) {
+        if (this.helper != null) {
+            throw null;
+        }
+        super.draw(canvas);
+    }
+
+    @Override // android.view.View
+    public boolean isOpaque() {
+        if (this.helper != null) {
+            throw null;
+        }
+        return super.isOpaque();
+    }
+}

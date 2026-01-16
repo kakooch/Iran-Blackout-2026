@@ -1,0 +1,178 @@
+package ir.eitaa.ui.Cells;
+
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
+import ir.eitaa.messenger.AndroidUtilities;
+import ir.eitaa.messenger.FileLoader;
+import ir.eitaa.messenger.ImageLocation;
+import ir.eitaa.messenger.LocaleController;
+import ir.eitaa.messenger.MediaController;
+import ir.eitaa.messenger.MessageObject;
+import ir.eitaa.messenger.R;
+import ir.eitaa.tgnet.TLRPC$PhotoSize;
+import ir.eitaa.ui.Components.BackupImageView;
+import ir.eitaa.ui.Components.CheckBox2;
+import ir.eitaa.ui.Components.LayoutHelper;
+
+/* loaded from: classes3.dex */
+public class PhotoPickerPhotoCell extends FrameLayout {
+    private Paint backgroundPaint;
+    public CheckBox2 checkBox;
+    public FrameLayout checkFrame;
+    private int extraWidth;
+    public BackupImageView imageView;
+    private int itemWidth;
+    public FrameLayout videoInfoContainer;
+    public TextView videoTextView;
+
+    public PhotoPickerPhotoCell(Context context) {
+        super(context);
+        this.backgroundPaint = new Paint();
+        setWillNotDraw(false);
+        BackupImageView backupImageView = new BackupImageView(context);
+        this.imageView = backupImageView;
+        backupImageView.setRoundRadius(AndroidUtilities.dp(4.0f));
+        addView(this.imageView, LayoutHelper.createFrame(-1, -1.0f));
+        FrameLayout frameLayout = new FrameLayout(context);
+        this.checkFrame = frameLayout;
+        addView(frameLayout, LayoutHelper.createFrame(42, 42, 53));
+        FrameLayout frameLayout2 = new FrameLayout(context) { // from class: ir.eitaa.ui.Cells.PhotoPickerPhotoCell.1
+            private Path path = new Path();
+            float[] radii = new float[8];
+            private RectF rect = new RectF();
+            private Paint paint = new Paint(1);
+
+            @Override // android.view.View
+            protected void onDraw(Canvas canvas) {
+                this.rect.set(0.0f, 0.0f, getMeasuredWidth(), getMeasuredHeight());
+                float[] fArr = this.radii;
+                fArr[3] = 0.0f;
+                fArr[2] = 0.0f;
+                fArr[1] = 0.0f;
+                fArr[0] = 0.0f;
+                float fDp = AndroidUtilities.dp(4.0f);
+                fArr[7] = fDp;
+                fArr[6] = fDp;
+                fArr[5] = fDp;
+                fArr[4] = fDp;
+                this.path.reset();
+                this.path.addRoundRect(this.rect, this.radii, Path.Direction.CW);
+                this.path.close();
+                this.paint.setColor(2130706432);
+                canvas.drawPath(this.path, this.paint);
+            }
+        };
+        this.videoInfoContainer = frameLayout2;
+        frameLayout2.setWillNotDraw(false);
+        this.videoInfoContainer.setPadding(AndroidUtilities.dp(3.0f), 0, AndroidUtilities.dp(3.0f), 0);
+        addView(this.videoInfoContainer, LayoutHelper.createFrame(-1, 16, 83));
+        ImageView imageView = new ImageView(context);
+        imageView.setImageResource(R.drawable.ic_video);
+        this.videoInfoContainer.addView(imageView, LayoutHelper.createFrame(-2, -2, 19));
+        TextView textView = new TextView(context);
+        this.videoTextView = textView;
+        textView.setTextColor(-1);
+        this.videoTextView.setTextSize(1, 12.0f);
+        this.videoTextView.setTypeface(AndroidUtilities.getFontFamily(false));
+        this.videoTextView.setImportantForAccessibility(2);
+        this.videoInfoContainer.addView(this.videoTextView, LayoutHelper.createFrame(-2, -2.0f, 19, 18.0f, -0.7f, 0.0f, 0.0f));
+        CheckBox2 checkBox2 = new CheckBox2(context, 24);
+        this.checkBox = checkBox2;
+        checkBox2.setDrawBackgroundAsArc(11);
+        this.checkBox.setColor("chat_attachCheckBoxBackground", "chat_attachPhotoBackground", "chat_attachCheckBoxCheck");
+        addView(this.checkBox, LayoutHelper.createFrame(26, 26.0f, 51, 55.0f, 4.0f, 0.0f, 0.0f));
+        this.checkBox.setVisibility(0);
+        setFocusable(true);
+    }
+
+    @Override // android.widget.FrameLayout, android.view.View
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(View.MeasureSpec.makeMeasureSpec(this.itemWidth + this.extraWidth, 1073741824), View.MeasureSpec.makeMeasureSpec(this.itemWidth, 1073741824));
+    }
+
+    @Override // android.view.ViewGroup, android.view.View
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        updateColors();
+    }
+
+    public void setItemWidth(int width, int extra) {
+        this.itemWidth = width;
+        this.extraWidth = extra;
+        ((FrameLayout.LayoutParams) this.checkFrame.getLayoutParams()).rightMargin = extra;
+        ((FrameLayout.LayoutParams) this.imageView.getLayoutParams()).rightMargin = extra;
+        ((FrameLayout.LayoutParams) this.videoInfoContainer.getLayoutParams()).rightMargin = extra;
+    }
+
+    public void updateColors() {
+        this.checkBox.setColor("chat_attachCheckBoxBackground", "chat_attachPhotoBackground", "chat_attachCheckBoxCheck");
+    }
+
+    public void setNum(int num) {
+        this.checkBox.setNum(num);
+    }
+
+    public void setImage(MediaController.PhotoEntry photoEntry) throws Resources.NotFoundException {
+        Drawable drawable = getResources().getDrawable(R.drawable.nophotos);
+        String str = photoEntry.thumbPath;
+        if (str != null) {
+            this.imageView.setImage(str, null, drawable);
+            return;
+        }
+        if (photoEntry.path != null) {
+            this.imageView.setOrientation(photoEntry.orientation, true);
+            if (photoEntry.isVideo) {
+                this.videoInfoContainer.setVisibility(0);
+                this.videoTextView.setText(AndroidUtilities.formatShortDuration(photoEntry.duration));
+                setContentDescription(LocaleController.getString("AttachVideo", R.string.AttachVideo) + ", " + LocaleController.formatDuration(photoEntry.duration));
+                this.imageView.setImage("vthumb://" + photoEntry.imageId + ":" + photoEntry.path, null, drawable);
+                return;
+            }
+            this.videoInfoContainer.setVisibility(4);
+            setContentDescription(LocaleController.getString("AttachPhoto", R.string.AttachPhoto));
+            this.imageView.setImage("thumb://" + photoEntry.imageId + ":" + photoEntry.path, null, drawable);
+            return;
+        }
+        this.imageView.setImageDrawable(drawable);
+    }
+
+    public void setImage(MediaController.SearchImage searchImage) {
+        Drawable drawable = getResources().getDrawable(R.drawable.nophotos);
+        TLRPC$PhotoSize tLRPC$PhotoSize = searchImage.thumbPhotoSize;
+        if (tLRPC$PhotoSize != null) {
+            this.imageView.setImage(ImageLocation.getForPhoto(tLRPC$PhotoSize, searchImage.photo), (String) null, drawable, searchImage);
+            return;
+        }
+        TLRPC$PhotoSize tLRPC$PhotoSize2 = searchImage.photoSize;
+        if (tLRPC$PhotoSize2 != null) {
+            this.imageView.setImage(ImageLocation.getForPhoto(tLRPC$PhotoSize2, searchImage.photo), "80_80", drawable, searchImage);
+            return;
+        }
+        String str = searchImage.thumbPath;
+        if (str != null) {
+            this.imageView.setImage(str, null, drawable);
+            return;
+        }
+        String str2 = searchImage.thumbUrl;
+        if (str2 != null && str2.length() > 0) {
+            this.imageView.setImage(searchImage.thumbUrl, null, drawable);
+        } else if (MessageObject.isDocumentHasThumb(searchImage.document)) {
+            this.imageView.setImage(ImageLocation.getForDocument(FileLoader.getClosestPhotoSizeWithSize(searchImage.document.thumbs, 320), searchImage.document), (String) null, drawable, searchImage);
+        } else {
+            this.imageView.setImageDrawable(drawable);
+        }
+    }
+
+    public void setChecked(final int num, final boolean checked, final boolean animated) {
+        this.checkBox.setChecked(num, checked, animated);
+    }
+}

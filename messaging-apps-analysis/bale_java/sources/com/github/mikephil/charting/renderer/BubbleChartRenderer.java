@@ -1,0 +1,183 @@
+package com.github.mikephil.charting.renderer;
+
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import com.github.mikephil.charting.animation.ChartAnimator;
+import com.github.mikephil.charting.data.BubbleData;
+import com.github.mikephil.charting.data.BubbleEntry;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.github.mikephil.charting.interfaces.dataprovider.BubbleDataProvider;
+import com.github.mikephil.charting.interfaces.datasets.IBubbleDataSet;
+import com.github.mikephil.charting.renderer.BarLineScatterCandleBubbleRenderer;
+import com.github.mikephil.charting.utils.MPPointF;
+import com.github.mikephil.charting.utils.Transformer;
+import com.github.mikephil.charting.utils.Utils;
+import com.github.mikephil.charting.utils.ViewPortHandler;
+import java.util.List;
+
+/* loaded from: classes2.dex */
+public class BubbleChartRenderer extends BarLineScatterCandleBubbleRenderer {
+    private float[] a;
+    private float[] b;
+    private float[] c;
+    protected BubbleDataProvider mChart;
+
+    public BubbleChartRenderer(BubbleDataProvider bubbleDataProvider, ChartAnimator chartAnimator, ViewPortHandler viewPortHandler) {
+        super(chartAnimator, viewPortHandler);
+        this.a = new float[4];
+        this.b = new float[2];
+        this.c = new float[3];
+        this.mChart = bubbleDataProvider;
+        this.mRenderPaint.setStyle(Paint.Style.FILL);
+        this.mHighlightPaint.setStyle(Paint.Style.STROKE);
+        this.mHighlightPaint.setStrokeWidth(Utils.convertDpToPixel(1.5f));
+    }
+
+    @Override // com.github.mikephil.charting.renderer.DataRenderer
+    public void drawData(Canvas canvas) {
+        for (T t : this.mChart.getBubbleData().getDataSets()) {
+            if (t.isVisible()) {
+                drawDataSet(canvas, t);
+            }
+        }
+    }
+
+    /* JADX WARN: Multi-variable type inference failed */
+    protected void drawDataSet(Canvas canvas, IBubbleDataSet iBubbleDataSet) {
+        if (iBubbleDataSet.getEntryCount() < 1) {
+            return;
+        }
+        Transformer transformer = this.mChart.getTransformer(iBubbleDataSet.getAxisDependency());
+        float phaseY = this.mAnimator.getPhaseY();
+        this.mXBounds.set(this.mChart, iBubbleDataSet);
+        float[] fArr = this.a;
+        fArr[0] = 0.0f;
+        fArr[2] = 1.0f;
+        transformer.pointValuesToPixel(fArr);
+        boolean zIsNormalizeSizeEnabled = iBubbleDataSet.isNormalizeSizeEnabled();
+        float[] fArr2 = this.a;
+        float fMin = Math.min(Math.abs(this.mViewPortHandler.contentBottom() - this.mViewPortHandler.contentTop()), Math.abs(fArr2[2] - fArr2[0]));
+        int i = this.mXBounds.min;
+        while (true) {
+            BarLineScatterCandleBubbleRenderer.XBounds xBounds = this.mXBounds;
+            if (i > xBounds.range + xBounds.min) {
+                return;
+            }
+            BubbleEntry bubbleEntry = (BubbleEntry) iBubbleDataSet.getEntryForIndex(i);
+            this.b[0] = bubbleEntry.getX();
+            this.b[1] = bubbleEntry.getY() * phaseY;
+            transformer.pointValuesToPixel(this.b);
+            float shapeSize = getShapeSize(bubbleEntry.getSize(), iBubbleDataSet.getMaxSize(), fMin, zIsNormalizeSizeEnabled) / 2.0f;
+            if (this.mViewPortHandler.isInBoundsTop(this.b[1] + shapeSize) && this.mViewPortHandler.isInBoundsBottom(this.b[1] - shapeSize) && this.mViewPortHandler.isInBoundsLeft(this.b[0] + shapeSize)) {
+                if (!this.mViewPortHandler.isInBoundsRight(this.b[0] - shapeSize)) {
+                    return;
+                }
+                this.mRenderPaint.setColor(iBubbleDataSet.getColor((int) bubbleEntry.getX()));
+                float[] fArr3 = this.b;
+                canvas.drawCircle(fArr3[0], fArr3[1], shapeSize, this.mRenderPaint);
+            }
+            i++;
+        }
+    }
+
+    @Override // com.github.mikephil.charting.renderer.DataRenderer
+    public void drawExtras(Canvas canvas) {
+    }
+
+    /* JADX WARN: Multi-variable type inference failed */
+    /* JADX WARN: Removed duplicated region for block: B:8:0x0029  */
+    @Override // com.github.mikephil.charting.renderer.DataRenderer
+    /*
+        Code decompiled incorrectly, please refer to instructions dump.
+        To view partially-correct add '--show-bad-code' argument
+    */
+    public void drawHighlighted(android.graphics.Canvas r18, com.github.mikephil.charting.highlight.Highlight[] r19) {
+        /*
+            Method dump skipped, instructions count: 320
+            To view this dump add '--comments-level debug' option
+        */
+        throw new UnsupportedOperationException("Method not decompiled: com.github.mikephil.charting.renderer.BubbleChartRenderer.drawHighlighted(android.graphics.Canvas, com.github.mikephil.charting.highlight.Highlight[]):void");
+    }
+
+    @Override // com.github.mikephil.charting.renderer.DataRenderer
+    public void drawValue(Canvas canvas, String str, float f, float f2, int i) {
+        this.mValuePaint.setColor(i);
+        canvas.drawText(str, f, f2, this.mValuePaint);
+    }
+
+    /* JADX WARN: Multi-variable type inference failed */
+    @Override // com.github.mikephil.charting.renderer.DataRenderer
+    public void drawValues(Canvas canvas) {
+        int i;
+        BubbleEntry bubbleEntry;
+        float f;
+        float f2;
+        BubbleData bubbleData = this.mChart.getBubbleData();
+        if (bubbleData != null && isDrawingValuesAllowed(this.mChart)) {
+            List<T> dataSets = bubbleData.getDataSets();
+            float fCalcTextHeight = Utils.calcTextHeight(this.mValuePaint, "1");
+            for (int i2 = 0; i2 < dataSets.size(); i2++) {
+                IBubbleDataSet iBubbleDataSet = (IBubbleDataSet) dataSets.get(i2);
+                if (shouldDrawValues(iBubbleDataSet) && iBubbleDataSet.getEntryCount() >= 1) {
+                    applyValueTextStyle(iBubbleDataSet);
+                    float fMax = Math.max(0.0f, Math.min(1.0f, this.mAnimator.getPhaseX()));
+                    float phaseY = this.mAnimator.getPhaseY();
+                    this.mXBounds.set(this.mChart, iBubbleDataSet);
+                    Transformer transformer = this.mChart.getTransformer(iBubbleDataSet.getAxisDependency());
+                    BarLineScatterCandleBubbleRenderer.XBounds xBounds = this.mXBounds;
+                    float[] fArrGenerateTransformedValuesBubble = transformer.generateTransformedValuesBubble(iBubbleDataSet, phaseY, xBounds.min, xBounds.max);
+                    float f3 = fMax == 1.0f ? phaseY : fMax;
+                    ValueFormatter valueFormatter = iBubbleDataSet.getValueFormatter();
+                    MPPointF mPPointF = MPPointF.getInstance(iBubbleDataSet.getIconsOffset());
+                    mPPointF.x = Utils.convertDpToPixel(mPPointF.x);
+                    mPPointF.y = Utils.convertDpToPixel(mPPointF.y);
+                    for (int i3 = 0; i3 < fArrGenerateTransformedValuesBubble.length; i3 = i + 2) {
+                        int i4 = i3 / 2;
+                        int valueTextColor = iBubbleDataSet.getValueTextColor(this.mXBounds.min + i4);
+                        int iArgb = Color.argb(Math.round(255.0f * f3), Color.red(valueTextColor), Color.green(valueTextColor), Color.blue(valueTextColor));
+                        float f4 = fArrGenerateTransformedValuesBubble[i3];
+                        float f5 = fArrGenerateTransformedValuesBubble[i3 + 1];
+                        if (!this.mViewPortHandler.isInBoundsRight(f4)) {
+                            break;
+                        }
+                        if (this.mViewPortHandler.isInBoundsLeft(f4) && this.mViewPortHandler.isInBoundsY(f5)) {
+                            BubbleEntry bubbleEntry2 = (BubbleEntry) iBubbleDataSet.getEntryForIndex(i4 + this.mXBounds.min);
+                            if (iBubbleDataSet.isDrawValuesEnabled()) {
+                                bubbleEntry = bubbleEntry2;
+                                f = f5;
+                                f2 = f4;
+                                i = i3;
+                                drawValue(canvas, valueFormatter.getBubbleLabel(bubbleEntry2), f4, f5 + (0.5f * fCalcTextHeight), iArgb);
+                            } else {
+                                bubbleEntry = bubbleEntry2;
+                                f = f5;
+                                f2 = f4;
+                                i = i3;
+                            }
+                            if (bubbleEntry.getIcon() != null && iBubbleDataSet.isDrawIconsEnabled()) {
+                                Drawable icon = bubbleEntry.getIcon();
+                                Utils.drawImage(canvas, icon, (int) (f2 + mPPointF.x), (int) (f + mPPointF.y), icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
+                            }
+                        } else {
+                            i = i3;
+                        }
+                    }
+                    MPPointF.recycleInstance(mPPointF);
+                }
+            }
+        }
+    }
+
+    protected float getShapeSize(float f, float f2, float f3, boolean z) {
+        if (z) {
+            f = f2 == 0.0f ? 1.0f : (float) Math.sqrt(f / f2);
+        }
+        return f3 * f;
+    }
+
+    @Override // com.github.mikephil.charting.renderer.DataRenderer
+    public void initBuffers() {
+    }
+}

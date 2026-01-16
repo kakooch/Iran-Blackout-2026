@@ -1,0 +1,56 @@
+package org.rbmain.tgnet;
+
+/* loaded from: classes4.dex */
+public abstract class TLRPC$InputStickerSet extends TLObject {
+    public long access_hash;
+    public long id;
+    public String short_name;
+
+    public static TLRPC$InputStickerSet TLdeserialize(AbstractSerializedData abstractSerializedData, int i, boolean z) {
+        TLRPC$InputStickerSet tLRPC$TL_inputStickerSetShortName;
+        switch (i) {
+            case -2044933984:
+                tLRPC$TL_inputStickerSetShortName = new TLRPC$TL_inputStickerSetShortName();
+                break;
+            case -1645763991:
+                tLRPC$TL_inputStickerSetShortName = new TLRPC$TL_inputStickerSetID();
+                break;
+            case -427863538:
+                tLRPC$TL_inputStickerSetShortName = new TLRPC$TL_inputStickerSetDice();
+                break;
+            case -4838507:
+                tLRPC$TL_inputStickerSetShortName = new TLRPC$TL_inputStickerSetEmpty();
+                break;
+            case 42402760:
+                tLRPC$TL_inputStickerSetShortName = new TLRPC$InputStickerSet() { // from class: org.rbmain.tgnet.TLRPC$TL_inputStickerSetAnimatedEmoji
+                    public static int constructor = 42402760;
+
+                    @Override // org.rbmain.tgnet.TLObject
+                    public void serializeToStream(AbstractSerializedData abstractSerializedData2) {
+                        abstractSerializedData2.writeInt32(constructor);
+                    }
+                };
+                break;
+            case 701560302:
+                tLRPC$TL_inputStickerSetShortName = new TLRPC$InputStickerSet() { // from class: org.rbmain.tgnet.TLRPC$TL_inputStickerSetEmojiDefaultStatuses
+                    public static int constructor = 701560302;
+
+                    @Override // org.rbmain.tgnet.TLObject
+                    public void serializeToStream(AbstractSerializedData abstractSerializedData2) {
+                        abstractSerializedData2.writeInt32(constructor);
+                    }
+                };
+                break;
+            default:
+                tLRPC$TL_inputStickerSetShortName = null;
+                break;
+        }
+        if (tLRPC$TL_inputStickerSetShortName == null && z) {
+            throw new RuntimeException(String.format("can't parse magic %x in InputStickerSet", Integer.valueOf(i)));
+        }
+        if (tLRPC$TL_inputStickerSetShortName != null) {
+            tLRPC$TL_inputStickerSetShortName.readParams(abstractSerializedData, z);
+        }
+        return tLRPC$TL_inputStickerSetShortName;
+    }
+}

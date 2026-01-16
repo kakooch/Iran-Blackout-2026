@@ -1,0 +1,34 @@
+package org.rbmain.tgnet;
+
+/* loaded from: classes4.dex */
+public class TLRPC$TL_messages_requestUrlAuth extends TLObject {
+    public static int constructor = 428848198;
+    public int button_id;
+    public int flags;
+    public long msg_id;
+    public TLRPC$InputPeer peer;
+    public String url;
+
+    @Override // org.rbmain.tgnet.TLObject
+    public TLObject deserializeResponse(AbstractSerializedData abstractSerializedData, int i, boolean z) {
+        return TLRPC$UrlAuthResult.TLdeserialize(abstractSerializedData, i, z);
+    }
+
+    @Override // org.rbmain.tgnet.TLObject
+    public void serializeToStream(AbstractSerializedData abstractSerializedData) {
+        abstractSerializedData.writeInt32(constructor);
+        abstractSerializedData.writeInt32(this.flags);
+        if ((this.flags & 2) != 0) {
+            this.peer.serializeToStream(abstractSerializedData);
+        }
+        if ((this.flags & 2) != 0) {
+            abstractSerializedData.writeInt32((int) this.msg_id);
+        }
+        if ((this.flags & 2) != 0) {
+            abstractSerializedData.writeInt32(this.button_id);
+        }
+        if ((this.flags & 4) != 0) {
+            abstractSerializedData.writeString(this.url);
+        }
+    }
+}

@@ -1,0 +1,1135 @@
+package org.rbmain.ui;
+
+import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.text.Editable;
+import android.text.TextPaint;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
+import androidx.collection.LongSparseArray;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import io.github.inflationx.calligraphy3.BuildConfig;
+import ir.medu.shad.R;
+import java.util.ArrayList;
+import java.util.Collections;
+import org.rbmain.messenger.AndroidUtilities;
+import org.rbmain.messenger.Emoji;
+import org.rbmain.messenger.FileLog;
+import org.rbmain.messenger.LocaleController;
+import org.rbmain.messenger.MessagesController;
+import org.rbmain.messenger.NotificationCenter;
+import org.rbmain.tgnet.RequestDelegate;
+import org.rbmain.tgnet.TLObject;
+import org.rbmain.tgnet.TLRPC$TL_error;
+import org.rbmain.tgnet.TLRPC$TL_messages_updateDialogFilter;
+import org.rbmain.tgnet.TLRPC$User;
+import org.rbmain.ui.ActionBar.ActionBar;
+import org.rbmain.ui.ActionBar.ActionBarMenu;
+import org.rbmain.ui.ActionBar.ActionBarMenuItem;
+import org.rbmain.ui.ActionBar.AlertDialog;
+import org.rbmain.ui.ActionBar.BaseFragment;
+import org.rbmain.ui.ActionBar.SimpleTextView;
+import org.rbmain.ui.ActionBar.Theme;
+import org.rbmain.ui.ActionBar.ThemeDescription;
+import org.rbmain.ui.Cells.HeaderCell;
+import org.rbmain.ui.Cells.PollEditTextCell;
+import org.rbmain.ui.Cells.ShadowSectionCell;
+import org.rbmain.ui.Cells.TextCell;
+import org.rbmain.ui.Cells.TextInfoPrivacyCell;
+import org.rbmain.ui.Cells.UserCell;
+import org.rbmain.ui.Components.EditTextBoldCursor;
+import org.rbmain.ui.Components.LayoutHelper;
+import org.rbmain.ui.Components.RLottieImageView;
+import org.rbmain.ui.Components.RecyclerListView;
+import org.rbmain.ui.FilterUsersActivity;
+
+/* loaded from: classes4.dex */
+public class FilterCreateActivity extends BaseFragment {
+    private ListAdapter adapter;
+    private boolean creatingNew;
+    private ActionBarMenuItem doneItem;
+    private int excludeAddRow;
+    private int excludeArchivedRow;
+    private int excludeEndRow;
+    private boolean excludeExpanded;
+    private int excludeHeaderRow;
+    private int excludeMutedRow;
+    private int excludeReadRow;
+    private int excludeSectionRow;
+    private int excludeShowMoreRow;
+    private int excludeStartRow;
+    private MessagesController.DialogFilter filter;
+    private boolean hasUserChanged;
+    private int imageRow;
+    private int includeAddRow;
+    private int includeBotsRow;
+    private int includeChannelsRow;
+    private int includeContactsRow;
+    private int includeEndRow;
+    private boolean includeExpanded;
+    private int includeGroupsRow;
+    private int includeHeaderRow;
+    private int includeNonContactsRow;
+    private int includeSectionRow;
+    private int includeShowMoreRow;
+    private int includeStartRow;
+    private RecyclerListView listView;
+    private boolean nameChangedManually;
+    private int namePreSectionRow;
+    private int nameRow;
+    private int nameSectionRow;
+    private ArrayList<Integer> newAlwaysShow;
+    private int newFilterFlags;
+    private String newFilterName;
+    private ArrayList<Integer> newNeverShow;
+    private LongSparseArray<Integer> newPinned;
+    private int removeRow;
+    private int removeSectionRow;
+    private int rowCount;
+
+    public static class HintInnerCell extends FrameLayout {
+        private RLottieImageView imageView;
+
+        public HintInnerCell(Context context) {
+            super(context);
+            RLottieImageView rLottieImageView = new RLottieImageView(context);
+            this.imageView = rLottieImageView;
+            rLottieImageView.setAnimation(R.raw.filter_new, 100, 100);
+            this.imageView.setScaleType(ImageView.ScaleType.CENTER);
+            this.imageView.playAnimation();
+            addView(this.imageView, LayoutHelper.createFrame(100, 100.0f, 17, 0.0f, 0.0f, 0.0f, 0.0f));
+            this.imageView.setOnClickListener(new View.OnClickListener() { // from class: org.rbmain.ui.FilterCreateActivity$HintInnerCell$$ExternalSyntheticLambda0
+                @Override // android.view.View.OnClickListener
+                public final void onClick(View view) {
+                    this.f$0.lambda$new$0(view);
+                }
+            });
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        public /* synthetic */ void lambda$new$0(View view) {
+            if (this.imageView.isPlaying()) {
+                return;
+            }
+            this.imageView.setProgress(0.0f);
+            this.imageView.playAnimation();
+        }
+
+        @Override // android.widget.FrameLayout, android.view.View
+        protected void onMeasure(int i, int i2) {
+            super.onMeasure(View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.getSize(i), 1073741824), View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(156.0f), 1073741824));
+        }
+    }
+
+    public FilterCreateActivity() {
+        this(null, null);
+    }
+
+    public FilterCreateActivity(MessagesController.DialogFilter dialogFilter) {
+        this(dialogFilter, null);
+    }
+
+    public FilterCreateActivity(MessagesController.DialogFilter dialogFilter, ArrayList<Integer> arrayList) {
+        this.rowCount = 0;
+        this.filter = dialogFilter;
+        if (dialogFilter == null) {
+            MessagesController.DialogFilter dialogFilter2 = new MessagesController.DialogFilter();
+            this.filter = dialogFilter2;
+            dialogFilter2.id = 2;
+            while (getMessagesController().dialogFiltersById.get(this.filter.id) != null) {
+                this.filter.id++;
+            }
+            this.filter.name = BuildConfig.FLAVOR;
+            this.creatingNew = true;
+        }
+        MessagesController.DialogFilter dialogFilter3 = this.filter;
+        this.newFilterName = dialogFilter3.name;
+        this.newFilterFlags = dialogFilter3.flags;
+        ArrayList<Integer> arrayList2 = new ArrayList<>(this.filter.alwaysShow);
+        this.newAlwaysShow = arrayList2;
+        if (arrayList != null) {
+            arrayList2.addAll(arrayList);
+        }
+        this.newNeverShow = new ArrayList<>(this.filter.neverShow);
+        this.newPinned = this.filter.pinnedDialogs.m132clone();
+    }
+
+    @Override // org.rbmain.ui.ActionBar.BaseFragment
+    public boolean onFragmentCreate() {
+        updateRows();
+        return super.onFragmentCreate();
+    }
+
+    private void updateRows() {
+        this.rowCount = 0;
+        if (this.creatingNew) {
+            this.rowCount = 0 + 1;
+            this.imageRow = 0;
+            this.namePreSectionRow = -1;
+        } else {
+            this.imageRow = -1;
+            this.rowCount = 0 + 1;
+            this.namePreSectionRow = 0;
+        }
+        int i = this.rowCount;
+        int i2 = i + 1;
+        this.rowCount = i2;
+        this.nameRow = i;
+        int i3 = i2 + 1;
+        this.rowCount = i3;
+        this.nameSectionRow = i2;
+        int i4 = i3 + 1;
+        this.rowCount = i4;
+        this.includeHeaderRow = i3;
+        int i5 = i4 + 1;
+        this.rowCount = i5;
+        this.includeAddRow = i4;
+        int i6 = this.newFilterFlags;
+        if ((MessagesController.DIALOG_FILTER_FLAG_CONTACTS & i6) != 0) {
+            this.rowCount = i5 + 1;
+            this.includeContactsRow = i5;
+        } else {
+            this.includeContactsRow = -1;
+        }
+        if ((MessagesController.DIALOG_FILTER_FLAG_NON_CONTACTS & i6) != 0) {
+            int i7 = this.rowCount;
+            this.rowCount = i7 + 1;
+            this.includeNonContactsRow = i7;
+        } else {
+            this.includeNonContactsRow = -1;
+        }
+        if ((MessagesController.DIALOG_FILTER_FLAG_GROUPS & i6) != 0) {
+            int i8 = this.rowCount;
+            this.rowCount = i8 + 1;
+            this.includeGroupsRow = i8;
+        } else {
+            this.includeGroupsRow = -1;
+        }
+        if ((MessagesController.DIALOG_FILTER_FLAG_CHANNELS & i6) != 0) {
+            int i9 = this.rowCount;
+            this.rowCount = i9 + 1;
+            this.includeChannelsRow = i9;
+        } else {
+            this.includeChannelsRow = -1;
+        }
+        if ((MessagesController.DIALOG_FILTER_FLAG_BOTS & i6) != 0) {
+            int i10 = this.rowCount;
+            this.rowCount = i10 + 1;
+            this.includeBotsRow = i10;
+        } else {
+            this.includeBotsRow = -1;
+        }
+        if (!this.newAlwaysShow.isEmpty()) {
+            this.includeStartRow = this.rowCount;
+            int size = (this.includeExpanded || this.newAlwaysShow.size() < 8) ? this.newAlwaysShow.size() : Math.min(5, this.newAlwaysShow.size());
+            int i11 = this.rowCount + size;
+            this.rowCount = i11;
+            this.includeEndRow = i11;
+            if (size != this.newAlwaysShow.size()) {
+                int i12 = this.rowCount;
+                this.rowCount = i12 + 1;
+                this.includeShowMoreRow = i12;
+            } else {
+                this.includeShowMoreRow = -1;
+            }
+        } else {
+            this.includeStartRow = -1;
+            this.includeEndRow = -1;
+            this.includeShowMoreRow = -1;
+        }
+        int i13 = this.rowCount;
+        int i14 = i13 + 1;
+        this.rowCount = i14;
+        this.includeSectionRow = i13;
+        int i15 = i14 + 1;
+        this.rowCount = i15;
+        this.excludeHeaderRow = i14;
+        int i16 = i15 + 1;
+        this.rowCount = i16;
+        this.excludeAddRow = i15;
+        int i17 = this.newFilterFlags;
+        if ((MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED & i17) != 0) {
+            this.rowCount = i16 + 1;
+            this.excludeMutedRow = i16;
+        } else {
+            this.excludeMutedRow = -1;
+        }
+        if ((MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_READ & i17) != 0) {
+            int i18 = this.rowCount;
+            this.rowCount = i18 + 1;
+            this.excludeReadRow = i18;
+        } else {
+            this.excludeReadRow = -1;
+        }
+        if ((i17 & MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_ARCHIVED) != 0) {
+            int i19 = this.rowCount;
+            this.rowCount = i19 + 1;
+            this.excludeArchivedRow = i19;
+        } else {
+            this.excludeArchivedRow = -1;
+        }
+        if (!this.newNeverShow.isEmpty()) {
+            this.excludeStartRow = this.rowCount;
+            int size2 = (this.excludeExpanded || this.newNeverShow.size() < 8) ? this.newNeverShow.size() : Math.min(5, this.newNeverShow.size());
+            int i20 = this.rowCount + size2;
+            this.rowCount = i20;
+            this.excludeEndRow = i20;
+            if (size2 != this.newNeverShow.size()) {
+                int i21 = this.rowCount;
+                this.rowCount = i21 + 1;
+                this.excludeShowMoreRow = i21;
+            } else {
+                this.excludeShowMoreRow = -1;
+            }
+        } else {
+            this.excludeStartRow = -1;
+            this.excludeEndRow = -1;
+            this.excludeShowMoreRow = -1;
+        }
+        int i22 = this.rowCount;
+        int i23 = i22 + 1;
+        this.rowCount = i23;
+        this.excludeSectionRow = i22;
+        if (!this.creatingNew) {
+            int i24 = i23 + 1;
+            this.rowCount = i24;
+            this.removeRow = i23;
+            this.rowCount = i24 + 1;
+            this.removeSectionRow = i24;
+        } else {
+            this.removeRow = -1;
+            this.removeSectionRow = -1;
+        }
+        ListAdapter listAdapter = this.adapter;
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override // org.rbmain.ui.ActionBar.BaseFragment
+    public View createView(Context context) {
+        this.actionBar.setBackButtonImage(R.drawable.ic_ab_back);
+        this.actionBar.setAllowOverlayTitle(true);
+        ActionBarMenu actionBarMenuCreateMenu = this.actionBar.createMenu();
+        if (this.creatingNew) {
+            this.actionBar.setTitle(LocaleController.getString("FilterNew", R.string.FilterNew));
+        } else {
+            TextPaint textPaint = new TextPaint(1);
+            textPaint.setTextSize(AndroidUtilities.dp(20.0f));
+            this.actionBar.setTitle(Emoji.replaceEmoji(this.filter.name, textPaint.getFontMetricsInt(), AndroidUtilities.dp(20.0f), false));
+        }
+        this.actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() { // from class: org.rbmain.ui.FilterCreateActivity.1
+            @Override // org.rbmain.ui.ActionBar.ActionBar.ActionBarMenuOnItemClick
+            public void onItemClick(int i) {
+                if (i == -1) {
+                    if (FilterCreateActivity.this.checkDiscard()) {
+                        FilterCreateActivity.this.finishFragment();
+                    }
+                } else if (i == 1) {
+                    FilterCreateActivity.this.processDone();
+                }
+            }
+        });
+        this.doneItem = actionBarMenuCreateMenu.addItem(1, LocaleController.getString("Save", R.string.Save).toUpperCase());
+        FrameLayout frameLayout = new FrameLayout(context);
+        this.fragmentView = frameLayout;
+        FrameLayout frameLayout2 = frameLayout;
+        frameLayout2.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        RecyclerListView recyclerListView = new RecyclerListView(this, context) { // from class: org.rbmain.ui.FilterCreateActivity.2
+            @Override // android.view.ViewGroup, android.view.View
+            public boolean requestFocus(int i, Rect rect) {
+                return false;
+            }
+        };
+        this.listView = recyclerListView;
+        recyclerListView.setLayoutManager(new LinearLayoutManager(context, 1, false));
+        this.listView.setVerticalScrollBarEnabled(false);
+        frameLayout2.addView(this.listView, LayoutHelper.createFrame(-1, -1.0f));
+        RecyclerListView recyclerListView2 = this.listView;
+        ListAdapter listAdapter = new ListAdapter(context);
+        this.adapter = listAdapter;
+        recyclerListView2.setAdapter(listAdapter);
+        this.listView.setOnItemClickListener(new RecyclerListView.OnItemClickListener() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda12
+            @Override // org.rbmain.ui.Components.RecyclerListView.OnItemClickListener
+            public final void onItemClick(View view, int i) {
+                this.f$0.lambda$createView$4(view, i);
+            }
+        });
+        this.listView.setOnItemLongClickListener(new RecyclerListView.OnItemLongClickListener() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda13
+            @Override // org.rbmain.ui.Components.RecyclerListView.OnItemLongClickListener
+            public final boolean onItemClick(View view, int i) {
+                return this.f$0.lambda$createView$5(view, i);
+            }
+        });
+        checkDoneButton(false);
+        return this.fragmentView;
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$createView$4(View view, final int i) {
+        if (getParentActivity() == null) {
+            return;
+        }
+        if (i == this.includeShowMoreRow) {
+            this.includeExpanded = true;
+            updateRows();
+            return;
+        }
+        if (i == this.excludeShowMoreRow) {
+            this.excludeExpanded = true;
+            updateRows();
+            return;
+        }
+        int i2 = this.includeAddRow;
+        if (i == i2 || i == this.excludeAddRow) {
+            FilterUsersActivity filterUsersActivity = new FilterUsersActivity(i == i2, i == this.excludeAddRow ? this.newNeverShow : this.newAlwaysShow, this.newFilterFlags);
+            filterUsersActivity.setDelegate(new FilterUsersActivity.FilterUsersActivityDelegate() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda14
+                @Override // org.rbmain.ui.FilterUsersActivity.FilterUsersActivityDelegate
+                public final void didSelectChats(ArrayList arrayList, int i3) {
+                    this.f$0.lambda$createView$0(i, arrayList, i3);
+                }
+            });
+            presentFragment(filterUsersActivity);
+            return;
+        }
+        if (i == this.removeRow) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+            builder.setTitle(LocaleController.getString("FilterDelete", R.string.FilterDelete));
+            builder.setMessage(LocaleController.getString("FilterDeleteAlert", R.string.FilterDeleteAlert));
+            builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+            builder.setPositiveButton(LocaleController.getString("Delete", R.string.Delete), new DialogInterface.OnClickListener() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda3
+                @Override // android.content.DialogInterface.OnClickListener
+                public final void onClick(DialogInterface dialogInterface, int i3) {
+                    this.f$0.lambda$createView$3(dialogInterface, i3);
+                }
+            });
+            AlertDialog alertDialogCreate = builder.create();
+            showDialog(alertDialogCreate);
+            TextView textView = (TextView) alertDialogCreate.getButton(-1);
+            if (textView != null) {
+                textView.setTextColor(Theme.getColor(Theme.key_text_RedBold));
+                return;
+            }
+            return;
+        }
+        if (i == this.nameRow) {
+            PollEditTextCell pollEditTextCell = (PollEditTextCell) view;
+            pollEditTextCell.getTextView().requestFocus();
+            AndroidUtilities.showKeyboard(pollEditTextCell.getTextView());
+        } else if (view instanceof UserCell) {
+            UserCell userCell = (UserCell) view;
+            showRemoveAlert(i, userCell.getName(), userCell.getCurrentObject(), i < this.includeSectionRow);
+        }
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$createView$0(int i, ArrayList arrayList, int i2) {
+        this.newFilterFlags = i2;
+        if (i == this.excludeAddRow) {
+            this.newNeverShow = arrayList;
+            for (int i3 = 0; i3 < this.newNeverShow.size(); i3++) {
+                this.newAlwaysShow.remove(this.newNeverShow.get(i3));
+                this.newPinned.remove(r6.intValue());
+            }
+        } else {
+            this.newAlwaysShow = arrayList;
+            for (int i4 = 0; i4 < this.newAlwaysShow.size(); i4++) {
+                this.newNeverShow.remove(this.newAlwaysShow.get(i4));
+            }
+            ArrayList arrayList2 = new ArrayList();
+            int size = this.newPinned.size();
+            for (int i5 = 0; i5 < size; i5++) {
+                Integer numValueOf = Integer.valueOf((int) this.newPinned.keyAt(i5));
+                if (numValueOf.intValue() != 0 && !this.newAlwaysShow.contains(numValueOf)) {
+                    arrayList2.add(numValueOf);
+                }
+            }
+            int size2 = arrayList2.size();
+            for (int i6 = 0; i6 < size2; i6++) {
+                this.newPinned.remove(((Integer) arrayList2.get(i6)).intValue());
+            }
+        }
+        fillFilterName();
+        checkDoneButton(false);
+        updateRows();
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$createView$3(DialogInterface dialogInterface, int i) {
+        final AlertDialog alertDialog;
+        if (getParentActivity() != null) {
+            alertDialog = new AlertDialog(getParentActivity(), 3);
+            alertDialog.setCanCancel(false);
+            alertDialog.show();
+        } else {
+            alertDialog = null;
+        }
+        TLRPC$TL_messages_updateDialogFilter tLRPC$TL_messages_updateDialogFilter = new TLRPC$TL_messages_updateDialogFilter();
+        tLRPC$TL_messages_updateDialogFilter.id = this.filter.id;
+        getDialogsProxy().deleteDialogFilter(tLRPC$TL_messages_updateDialogFilter, new RequestDelegate() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda9
+            @Override // org.rbmain.tgnet.RequestDelegate
+            public final void run(TLObject tLObject, TLRPC$TL_error tLRPC$TL_error) {
+                this.f$0.lambda$createView$2(alertDialog, tLObject, tLRPC$TL_error);
+            }
+        });
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$createView$2(final AlertDialog alertDialog, TLObject tLObject, TLRPC$TL_error tLRPC$TL_error) {
+        AndroidUtilities.runOnUIThread(new Runnable() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda6
+            @Override // java.lang.Runnable
+            public final void run() {
+                this.f$0.lambda$createView$1(alertDialog);
+            }
+        });
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$createView$1(AlertDialog alertDialog) {
+        if (alertDialog != null) {
+            try {
+                alertDialog.dismiss();
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+        getMessagesController().removeFilter(this.filter);
+        finishFragment();
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ boolean lambda$createView$5(View view, int i) {
+        if (!(view instanceof UserCell)) {
+            return false;
+        }
+        UserCell userCell = (UserCell) view;
+        showRemoveAlert(i, userCell.getName(), userCell.getCurrentObject(), i < this.includeSectionRow);
+        return true;
+    }
+
+    @Override // org.rbmain.ui.ActionBar.BaseFragment
+    public void onResume() {
+        super.onResume();
+        ListAdapter listAdapter = this.adapter;
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override // org.rbmain.ui.ActionBar.BaseFragment
+    public boolean onBackPressed() {
+        return checkDiscard();
+    }
+
+    /* JADX WARN: Removed duplicated region for block: B:42:0x00a7  */
+    /*
+        Code decompiled incorrectly, please refer to instructions dump.
+        To view partially-correct add '--show-bad-code' argument
+    */
+    private void fillFilterName() {
+        /*
+            r5 = this;
+            boolean r0 = r5.creatingNew
+            if (r0 == 0) goto Lc5
+            java.lang.String r0 = r5.newFilterName
+            boolean r0 = android.text.TextUtils.isEmpty(r0)
+            if (r0 != 0) goto L12
+            boolean r0 = r5.nameChangedManually
+            if (r0 == 0) goto L12
+            goto Lc5
+        L12:
+            int r0 = r5.newFilterFlags
+            int r1 = org.rbmain.messenger.MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS
+            r2 = r0 & r1
+            r3 = r2 & r1
+            java.lang.String r4 = ""
+            if (r3 != r1) goto L3e
+            int r1 = org.rbmain.messenger.MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_READ
+            r1 = r1 & r0
+            if (r1 == 0) goto L2e
+            r0 = 2131888533(0x7f120995, float:1.9411704E38)
+            java.lang.String r1 = "FilterNameUnread"
+            java.lang.String r0 = org.rbmain.messenger.LocaleController.getString(r1, r0)
+            goto La8
+        L2e:
+            int r1 = org.rbmain.messenger.MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED
+            r0 = r0 & r1
+            if (r0 == 0) goto La7
+            r0 = 2131888532(0x7f120994, float:1.9411702E38)
+            java.lang.String r1 = "FilterNameNonMuted"
+            java.lang.String r0 = org.rbmain.messenger.LocaleController.getString(r1, r0)
+            goto La8
+        L3e:
+            int r0 = org.rbmain.messenger.MessagesController.DIALOG_FILTER_FLAG_CONTACTS
+            r1 = r2 & r0
+            if (r1 == 0) goto L53
+            r0 = r0 ^ (-1)
+            r0 = r0 & r2
+            if (r0 != 0) goto La7
+            r0 = 2131888467(0x7f120953, float:1.941157E38)
+            java.lang.String r1 = "FilterContacts"
+            java.lang.String r0 = org.rbmain.messenger.LocaleController.getString(r1, r0)
+            goto La8
+        L53:
+            int r0 = org.rbmain.messenger.MessagesController.DIALOG_FILTER_FLAG_NON_CONTACTS
+            r1 = r2 & r0
+            if (r1 == 0) goto L68
+            r0 = r0 ^ (-1)
+            r0 = r0 & r2
+            if (r0 != 0) goto La7
+            r0 = 2131888542(0x7f12099e, float:1.9411722E38)
+            java.lang.String r1 = "FilterNonContacts"
+            java.lang.String r0 = org.rbmain.messenger.LocaleController.getString(r1, r0)
+            goto La8
+        L68:
+            int r0 = org.rbmain.messenger.MessagesController.DIALOG_FILTER_FLAG_GROUPS
+            r1 = r2 & r0
+            if (r1 == 0) goto L7d
+            r0 = r0 ^ (-1)
+            r0 = r0 & r2
+            if (r0 != 0) goto La7
+            r0 = 2131888486(0x7f120966, float:1.9411609E38)
+            java.lang.String r1 = "FilterGroups"
+            java.lang.String r0 = org.rbmain.messenger.LocaleController.getString(r1, r0)
+            goto La8
+        L7d:
+            int r0 = org.rbmain.messenger.MessagesController.DIALOG_FILTER_FLAG_BOTS
+            r1 = r2 & r0
+            if (r1 == 0) goto L92
+            r0 = r0 ^ (-1)
+            r0 = r0 & r2
+            if (r0 != 0) goto La7
+            r0 = 2131888457(0x7f120949, float:1.941155E38)
+            java.lang.String r1 = "FilterBots"
+            java.lang.String r0 = org.rbmain.messenger.LocaleController.getString(r1, r0)
+            goto La8
+        L92:
+            int r0 = org.rbmain.messenger.MessagesController.DIALOG_FILTER_FLAG_CHANNELS
+            r1 = r2 & r0
+            if (r1 == 0) goto La7
+            r0 = r0 ^ (-1)
+            r0 = r0 & r2
+            if (r0 != 0) goto La7
+            r0 = 2131888458(0x7f12094a, float:1.9411552E38)
+            java.lang.String r1 = "FilterChannels"
+            java.lang.String r0 = org.rbmain.messenger.LocaleController.getString(r1, r0)
+            goto La8
+        La7:
+            r0 = r4
+        La8:
+            if (r0 == 0) goto Lb3
+            int r1 = r0.length()
+            r2 = 12
+            if (r1 <= r2) goto Lb3
+            goto Lb4
+        Lb3:
+            r4 = r0
+        Lb4:
+            r5.newFilterName = r4
+            org.rbmain.ui.Components.RecyclerListView r0 = r5.listView
+            int r1 = r5.nameRow
+            androidx.recyclerview.widget.RecyclerView$ViewHolder r0 = r0.findViewHolderForAdapterPosition(r1)
+            if (r0 == 0) goto Lc5
+            org.rbmain.ui.FilterCreateActivity$ListAdapter r1 = r5.adapter
+            r1.onViewAttachedToWindow(r0)
+        Lc5:
+            return
+        */
+        throw new UnsupportedOperationException("Method not decompiled: org.rbmain.ui.FilterCreateActivity.fillFilterName():void");
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public boolean checkDiscard() {
+        if (this.doneItem.getAlpha() != 1.0f) {
+            return true;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        if (this.creatingNew) {
+            builder.setTitle(LocaleController.getString("FilterDiscardNewTitle", R.string.FilterDiscardNewTitle));
+            builder.setMessage(LocaleController.getString("FilterDiscardNewAlert", R.string.FilterDiscardNewAlert));
+            builder.setPositiveButton(LocaleController.getString("FilterDiscardNewSave", R.string.FilterDiscardNewSave), new DialogInterface.OnClickListener() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda0
+                @Override // android.content.DialogInterface.OnClickListener
+                public final void onClick(DialogInterface dialogInterface, int i) {
+                    this.f$0.lambda$checkDiscard$6(dialogInterface, i);
+                }
+            });
+        } else {
+            builder.setTitle(LocaleController.getString("FilterDiscardTitle", R.string.FilterDiscardTitle));
+            builder.setMessage(LocaleController.getString("FilterDiscardAlert", R.string.FilterDiscardAlert));
+            builder.setPositiveButton(LocaleController.getString("ApplyTheme", R.string.ApplyTheme), new DialogInterface.OnClickListener() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda1
+                @Override // android.content.DialogInterface.OnClickListener
+                public final void onClick(DialogInterface dialogInterface, int i) {
+                    this.f$0.lambda$checkDiscard$7(dialogInterface, i);
+                }
+            });
+        }
+        builder.setNegativeButton(LocaleController.getString("PassportDiscard", R.string.PassportDiscard), new DialogInterface.OnClickListener() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda2
+            @Override // android.content.DialogInterface.OnClickListener
+            public final void onClick(DialogInterface dialogInterface, int i) {
+                this.f$0.lambda$checkDiscard$8(dialogInterface, i);
+            }
+        });
+        showDialog(builder.create());
+        return false;
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$checkDiscard$6(DialogInterface dialogInterface, int i) {
+        processDone();
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$checkDiscard$7(DialogInterface dialogInterface, int i) {
+        processDone();
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$checkDiscard$8(DialogInterface dialogInterface, int i) {
+        finishFragment();
+    }
+
+    private void showRemoveAlert(final int i, CharSequence charSequence, Object obj, final boolean z) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        if (z) {
+            builder.setTitle(LocaleController.getString("FilterRemoveInclusionTitle", R.string.FilterRemoveInclusionTitle));
+            if (obj instanceof String) {
+                builder.setMessage(LocaleController.formatString("FilterRemoveInclusionText", R.string.FilterRemoveInclusionText, charSequence));
+            } else if (obj instanceof TLRPC$User) {
+                builder.setMessage(LocaleController.formatString("FilterRemoveInclusionUserText", R.string.FilterRemoveInclusionUserText, charSequence));
+            } else {
+                builder.setMessage(LocaleController.formatString("FilterRemoveInclusionChatText", R.string.FilterRemoveInclusionChatText, charSequence));
+            }
+        } else {
+            builder.setTitle(LocaleController.getString("FilterRemoveExclusionTitle", R.string.FilterRemoveExclusionTitle));
+            if (obj instanceof String) {
+                builder.setMessage(LocaleController.formatString("FilterRemoveExclusionText", R.string.FilterRemoveExclusionText, charSequence));
+            } else if (obj instanceof TLRPC$User) {
+                builder.setMessage(LocaleController.formatString("FilterRemoveExclusionUserText", R.string.FilterRemoveExclusionUserText, charSequence));
+            } else {
+                builder.setMessage(LocaleController.formatString("FilterRemoveExclusionChatText", R.string.FilterRemoveExclusionChatText, charSequence));
+            }
+        }
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        builder.setPositiveButton(LocaleController.getString("StickersRemove", R.string.StickersRemove), new DialogInterface.OnClickListener() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda4
+            @Override // android.content.DialogInterface.OnClickListener
+            public final void onClick(DialogInterface dialogInterface, int i2) {
+                this.f$0.lambda$showRemoveAlert$9(i, z, dialogInterface, i2);
+            }
+        });
+        AlertDialog alertDialogCreate = builder.create();
+        showDialog(alertDialogCreate);
+        TextView textView = (TextView) alertDialogCreate.getButton(-1);
+        if (textView != null) {
+            textView.setTextColor(Theme.getColor(Theme.key_text_RedBold));
+        }
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$showRemoveAlert$9(int i, boolean z, DialogInterface dialogInterface, int i2) {
+        if (i == this.includeContactsRow) {
+            this.newFilterFlags &= MessagesController.DIALOG_FILTER_FLAG_CONTACTS ^ (-1);
+        } else if (i == this.includeNonContactsRow) {
+            this.newFilterFlags &= MessagesController.DIALOG_FILTER_FLAG_NON_CONTACTS ^ (-1);
+        } else if (i == this.includeGroupsRow) {
+            this.newFilterFlags &= MessagesController.DIALOG_FILTER_FLAG_GROUPS ^ (-1);
+        } else if (i == this.includeChannelsRow) {
+            this.newFilterFlags &= MessagesController.DIALOG_FILTER_FLAG_CHANNELS ^ (-1);
+        } else if (i == this.includeBotsRow) {
+            this.newFilterFlags &= MessagesController.DIALOG_FILTER_FLAG_BOTS ^ (-1);
+        } else if (i == this.excludeArchivedRow) {
+            this.newFilterFlags &= MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_ARCHIVED ^ (-1);
+        } else if (i == this.excludeMutedRow) {
+            this.newFilterFlags &= MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED ^ (-1);
+        } else if (i == this.excludeReadRow) {
+            this.newFilterFlags &= MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_READ ^ (-1);
+        } else if (z) {
+            this.newAlwaysShow.remove(i - this.includeStartRow);
+        } else {
+            this.newNeverShow.remove(i - this.excludeStartRow);
+        }
+        fillFilterName();
+        updateRows();
+        checkDoneButton(true);
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public void processDone() {
+        saveFilterToServer(this.filter, this.newFilterFlags, this.newFilterName, this.newAlwaysShow, this.newNeverShow, this.newPinned, this.creatingNew, false, this.hasUserChanged, true, true, this, new Runnable() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda5
+            @Override // java.lang.Runnable
+            public final void run() {
+                this.f$0.lambda$processDone$10();
+            }
+        });
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$processDone$10() {
+        getNotificationCenter().postNotificationName(NotificationCenter.dialogFiltersUpdated, new Object[0]);
+        finishFragment();
+    }
+
+    private static void processAddFilter(MessagesController.DialogFilter dialogFilter, int i, String str, ArrayList<Integer> arrayList, ArrayList<Integer> arrayList2, boolean z, boolean z2, boolean z3, boolean z4, BaseFragment baseFragment, Runnable runnable) {
+        if (dialogFilter.flags != i || z3) {
+            dialogFilter.pendingUnreadCount = -1;
+            if (z4) {
+                dialogFilter.unreadCount = -1;
+            }
+        }
+        dialogFilter.flags = i;
+        dialogFilter.name = str;
+        dialogFilter.neverShow = arrayList2;
+        dialogFilter.alwaysShow = arrayList;
+        if (z) {
+            baseFragment.getMessagesController().addFilter(dialogFilter, z2);
+        } else {
+            baseFragment.getMessagesController().onFilterUpdate(dialogFilter);
+        }
+        if (runnable != null) {
+            runnable.run();
+        }
+    }
+
+    /* JADX WARN: Removed duplicated region for block: B:79:0x0151  */
+    /*
+        Code decompiled incorrectly, please refer to instructions dump.
+        To view partially-correct add '--show-bad-code' argument
+    */
+    public static void saveFilterToServer(final org.rbmain.messenger.MessagesController.DialogFilter r19, final int r20, final java.lang.String r21, final java.util.ArrayList<java.lang.Integer> r22, final java.util.ArrayList<java.lang.Integer> r23, final androidx.collection.LongSparseArray<java.lang.Integer> r24, final boolean r25, final boolean r26, final boolean r27, final boolean r28, final boolean r29, final org.rbmain.ui.ActionBar.BaseFragment r30, final java.lang.Runnable r31) {
+        /*
+            Method dump skipped, instructions count: 436
+            To view this dump add '--comments-level debug' option
+        */
+        throw new UnsupportedOperationException("Method not decompiled: org.rbmain.ui.FilterCreateActivity.saveFilterToServer(org.rbmain.messenger.MessagesController$DialogFilter, int, java.lang.String, java.util.ArrayList, java.util.ArrayList, androidx.collection.LongSparseArray, boolean, boolean, boolean, boolean, boolean, org.rbmain.ui.ActionBar.BaseFragment, java.lang.Runnable):void");
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public static /* synthetic */ int lambda$saveFilterToServer$11(LongSparseArray longSparseArray, Integer num, Integer num2) {
+        int iIntValue = ((Integer) longSparseArray.get(num.intValue())).intValue();
+        int iIntValue2 = ((Integer) longSparseArray.get(num2.intValue())).intValue();
+        if (iIntValue > iIntValue2) {
+            return 1;
+        }
+        return iIntValue < iIntValue2 ? -1 : 0;
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public static /* synthetic */ void lambda$saveFilterToServer$13(final boolean z, final AlertDialog alertDialog, final MessagesController.DialogFilter dialogFilter, final int i, final String str, final ArrayList arrayList, final ArrayList arrayList2, final boolean z2, final boolean z3, final boolean z4, final boolean z5, final BaseFragment baseFragment, final Runnable runnable, TLObject tLObject, TLRPC$TL_error tLRPC$TL_error) {
+        AndroidUtilities.runOnUIThread(new Runnable() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda7
+            @Override // java.lang.Runnable
+            public final void run() {
+                FilterCreateActivity.lambda$saveFilterToServer$12(z, alertDialog, dialogFilter, i, str, arrayList, arrayList2, z2, z3, z4, z5, baseFragment, runnable);
+            }
+        });
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public static /* synthetic */ void lambda$saveFilterToServer$12(boolean z, AlertDialog alertDialog, MessagesController.DialogFilter dialogFilter, int i, String str, ArrayList arrayList, ArrayList arrayList2, boolean z2, boolean z3, boolean z4, boolean z5, BaseFragment baseFragment, Runnable runnable) {
+        if (z) {
+            if (alertDialog != null) {
+                try {
+                    alertDialog.dismiss();
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+            }
+            processAddFilter(dialogFilter, i, str, arrayList, arrayList2, z2, z3, z4, z5, baseFragment, runnable);
+        }
+    }
+
+    @Override // org.rbmain.ui.ActionBar.BaseFragment
+    public boolean canBeginSlide() {
+        return checkDiscard();
+    }
+
+    private boolean hasChanges() {
+        this.hasUserChanged = false;
+        if (this.filter.alwaysShow.size() != this.newAlwaysShow.size()) {
+            this.hasUserChanged = true;
+        }
+        if (this.filter.neverShow.size() != this.newNeverShow.size()) {
+            this.hasUserChanged = true;
+        }
+        if (!this.hasUserChanged) {
+            Collections.sort(this.filter.alwaysShow);
+            Collections.sort(this.newAlwaysShow);
+            if (!this.filter.alwaysShow.equals(this.newAlwaysShow)) {
+                this.hasUserChanged = true;
+            }
+            Collections.sort(this.filter.neverShow);
+            Collections.sort(this.newNeverShow);
+            if (!this.filter.neverShow.equals(this.newNeverShow)) {
+                this.hasUserChanged = true;
+            }
+        }
+        if (TextUtils.equals(this.filter.name, this.newFilterName) && this.filter.flags == this.newFilterFlags) {
+            return this.hasUserChanged;
+        }
+        return true;
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public void checkDoneButton(boolean z) {
+        boolean z2 = true;
+        boolean zHasChanges = !TextUtils.isEmpty(this.newFilterName) && this.newFilterName.length() <= 12;
+        if (zHasChanges) {
+            if ((this.newFilterFlags & MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS) == 0 && this.newAlwaysShow.isEmpty()) {
+                z2 = false;
+            }
+            zHasChanges = (!z2 || this.creatingNew) ? z2 : hasChanges();
+        }
+        if (this.doneItem.isEnabled() == zHasChanges) {
+            return;
+        }
+        this.doneItem.setEnabled(zHasChanges);
+        if (z) {
+            this.doneItem.animate().alpha(zHasChanges ? 1.0f : 0.0f).scaleX(zHasChanges ? 1.0f : 0.0f).scaleY(zHasChanges ? 1.0f : 0.0f).setDuration(180L).start();
+            return;
+        }
+        this.doneItem.setAlpha(zHasChanges ? 1.0f : 0.0f);
+        this.doneItem.setScaleX(zHasChanges ? 1.0f : 0.0f);
+        this.doneItem.setScaleY(zHasChanges ? 1.0f : 0.0f);
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public void setTextLeft(View view) {
+        if (view instanceof PollEditTextCell) {
+            PollEditTextCell pollEditTextCell = (PollEditTextCell) view;
+            String str = this.newFilterName;
+            int length = 12 - (str != null ? str.length() : 0);
+            if (length <= 3.6000004f) {
+                pollEditTextCell.setText2(String.format("%d", Integer.valueOf(length)));
+                SimpleTextView textView2 = pollEditTextCell.getTextView2();
+                int i = length < 0 ? Theme.key_text_RedRegular : Theme.key_windowBackgroundWhiteGrayText3;
+                textView2.setTextColor(Theme.getColor(i));
+                textView2.setTag(Integer.valueOf(i));
+                textView2.setAlpha((pollEditTextCell.getTextView().isFocused() || length < 0) ? 1.0f : 0.0f);
+                return;
+            }
+            pollEditTextCell.setText2(BuildConfig.FLAVOR);
+        }
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    class ListAdapter extends RecyclerListView.SelectionAdapter {
+        private Context mContext;
+
+        public ListAdapter(Context context) {
+            this.mContext = context;
+        }
+
+        @Override // org.rbmain.ui.Components.RecyclerListView.SelectionAdapter
+        public boolean isEnabled(RecyclerView.ViewHolder viewHolder) {
+            int itemViewType = viewHolder.getItemViewType();
+            return (itemViewType == 3 || itemViewType == 0 || itemViewType == 2 || itemViewType == 5) ? false : true;
+        }
+
+        @Override // androidx.recyclerview.widget.RecyclerView.Adapter
+        public int getItemCount() {
+            return FilterCreateActivity.this.rowCount;
+        }
+
+        /* JADX INFO: Access modifiers changed from: private */
+        public /* synthetic */ void lambda$onCreateViewHolder$0(PollEditTextCell pollEditTextCell, View view, boolean z) {
+            pollEditTextCell.getTextView2().setAlpha((z || FilterCreateActivity.this.newFilterName.length() > 12) ? 1.0f : 0.0f);
+        }
+
+        /* JADX WARN: Multi-variable type inference failed */
+        @Override // androidx.recyclerview.widget.RecyclerView.Adapter
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+            View headerCell;
+            UserCell userCell;
+            if (i != 0) {
+                if (i == 1) {
+                    UserCell userCell2 = new UserCell(this.mContext, 6, 0, false);
+                    userCell2.setSelfAsSavedMessages(true);
+                    userCell2.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    userCell = userCell2;
+                } else if (i == 2) {
+                    final PollEditTextCell pollEditTextCell = new PollEditTextCell(this.mContext, null);
+                    pollEditTextCell.createErrorTextView();
+                    pollEditTextCell.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                    pollEditTextCell.addTextWatcher(new TextWatcher() { // from class: org.rbmain.ui.FilterCreateActivity.ListAdapter.1
+                        @Override // android.text.TextWatcher
+                        public void beforeTextChanged(CharSequence charSequence, int i2, int i3, int i4) {
+                        }
+
+                        @Override // android.text.TextWatcher
+                        public void onTextChanged(CharSequence charSequence, int i2, int i3, int i4) {
+                        }
+
+                        @Override // android.text.TextWatcher
+                        public void afterTextChanged(Editable editable) {
+                            if (pollEditTextCell.getTag() != null) {
+                                return;
+                            }
+                            String string = editable.toString();
+                            if (!TextUtils.equals(string, FilterCreateActivity.this.newFilterName)) {
+                                FilterCreateActivity.this.nameChangedManually = !TextUtils.isEmpty(string);
+                                FilterCreateActivity.this.newFilterName = string;
+                            }
+                            RecyclerView.ViewHolder viewHolderFindViewHolderForAdapterPosition = FilterCreateActivity.this.listView.findViewHolderForAdapterPosition(FilterCreateActivity.this.nameRow);
+                            if (viewHolderFindViewHolderForAdapterPosition != null) {
+                                FilterCreateActivity.this.setTextLeft(viewHolderFindViewHolderForAdapterPosition.itemView);
+                            }
+                            FilterCreateActivity.this.checkDoneButton(true);
+                        }
+                    });
+                    EditTextBoldCursor textView = pollEditTextCell.getTextView();
+                    pollEditTextCell.setShowNextButton(true);
+                    textView.setOnFocusChangeListener(new View.OnFocusChangeListener() { // from class: org.rbmain.ui.FilterCreateActivity$ListAdapter$$ExternalSyntheticLambda0
+                        @Override // android.view.View.OnFocusChangeListener
+                        public final void onFocusChange(View view, boolean z) {
+                            this.f$0.lambda$onCreateViewHolder$0(pollEditTextCell, view, z);
+                        }
+                    });
+                    textView.setImeOptions(268435462);
+                    userCell = pollEditTextCell;
+                } else if (i == 3) {
+                    headerCell = new ShadowSectionCell(this.mContext);
+                } else if (i == 4) {
+                    headerCell = new TextCell(this.mContext);
+                    headerCell.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                } else if (i == 5) {
+                    headerCell = new HintInnerCell(this.mContext);
+                } else {
+                    headerCell = new TextInfoPrivacyCell(this.mContext);
+                }
+                headerCell = userCell;
+            } else {
+                headerCell = new HeaderCell(this.mContext);
+                headerCell.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+            }
+            return new RecyclerListView.Holder(headerCell);
+        }
+
+        @Override // androidx.recyclerview.widget.RecyclerView.Adapter
+        public void onViewAttachedToWindow(RecyclerView.ViewHolder viewHolder) {
+            if (viewHolder.getItemViewType() == 2) {
+                FilterCreateActivity.this.setTextLeft(viewHolder.itemView);
+                PollEditTextCell pollEditTextCell = (PollEditTextCell) viewHolder.itemView;
+                pollEditTextCell.setTag(1);
+                pollEditTextCell.setTextAndHint(FilterCreateActivity.this.newFilterName != null ? FilterCreateActivity.this.newFilterName : BuildConfig.FLAVOR, LocaleController.getString("FilterNameHint", R.string.FilterNameHint), false);
+                pollEditTextCell.setTag(null);
+            }
+        }
+
+        @Override // androidx.recyclerview.widget.RecyclerView.Adapter
+        public void onViewDetachedFromWindow(RecyclerView.ViewHolder viewHolder) {
+            if (viewHolder.getItemViewType() == 2) {
+                EditTextBoldCursor textView = ((PollEditTextCell) viewHolder.itemView).getTextView();
+                if (textView.isFocused()) {
+                    textView.clearFocus();
+                    AndroidUtilities.hideKeyboard(textView);
+                }
+            }
+        }
+
+        /* JADX WARN: Removed duplicated region for block: B:58:0x0194 A[PHI: r11
+          0x0194: PHI (r11v45 java.lang.Integer) = (r11v44 java.lang.Integer), (r11v44 java.lang.Integer), (r11v81 java.lang.Integer), (r11v81 java.lang.Integer) binds: [B:65:0x01c1, B:67:0x01ca, B:55:0x0189, B:57:0x0192] A[DONT_GENERATE, DONT_INLINE]] */
+        @Override // androidx.recyclerview.widget.RecyclerView.Adapter
+        /*
+            Code decompiled incorrectly, please refer to instructions dump.
+            To view partially-correct add '--show-bad-code' argument
+        */
+        public void onBindViewHolder(androidx.recyclerview.widget.RecyclerView.ViewHolder r11, int r12) {
+            /*
+                Method dump skipped, instructions count: 924
+                To view this dump add '--comments-level debug' option
+            */
+            throw new UnsupportedOperationException("Method not decompiled: org.rbmain.ui.FilterCreateActivity.ListAdapter.onBindViewHolder(androidx.recyclerview.widget.RecyclerView$ViewHolder, int):void");
+        }
+
+        @Override // androidx.recyclerview.widget.RecyclerView.Adapter
+        public int getItemViewType(int i) {
+            if (i == FilterCreateActivity.this.includeHeaderRow || i == FilterCreateActivity.this.excludeHeaderRow) {
+                return 0;
+            }
+            if (i >= FilterCreateActivity.this.includeStartRow && i < FilterCreateActivity.this.includeEndRow) {
+                return 1;
+            }
+            if ((i >= FilterCreateActivity.this.excludeStartRow && i < FilterCreateActivity.this.excludeEndRow) || i == FilterCreateActivity.this.includeContactsRow || i == FilterCreateActivity.this.includeNonContactsRow || i == FilterCreateActivity.this.includeGroupsRow || i == FilterCreateActivity.this.includeChannelsRow || i == FilterCreateActivity.this.includeBotsRow || i == FilterCreateActivity.this.excludeReadRow || i == FilterCreateActivity.this.excludeArchivedRow || i == FilterCreateActivity.this.excludeMutedRow) {
+                return 1;
+            }
+            if (i == FilterCreateActivity.this.nameRow) {
+                return 2;
+            }
+            if (i == FilterCreateActivity.this.nameSectionRow || i == FilterCreateActivity.this.namePreSectionRow || i == FilterCreateActivity.this.removeSectionRow) {
+                return 3;
+            }
+            if (i == FilterCreateActivity.this.imageRow) {
+                return 5;
+            }
+            return (i == FilterCreateActivity.this.includeSectionRow || i == FilterCreateActivity.this.excludeSectionRow) ? 6 : 4;
+        }
+    }
+
+    @Override // org.rbmain.ui.ActionBar.BaseFragment
+    public ArrayList<ThemeDescription> getThemeDescriptions() {
+        ArrayList<ThemeDescription> arrayList = new ArrayList<>();
+        ThemeDescription.ThemeDescriptionDelegate themeDescriptionDelegate = new ThemeDescription.ThemeDescriptionDelegate() { // from class: org.rbmain.ui.FilterCreateActivity$$ExternalSyntheticLambda11
+            @Override // org.rbmain.ui.ActionBar.ThemeDescription.ThemeDescriptionDelegate
+            public final void didSetColor() {
+                this.f$0.lambda$getThemeDescriptions$14();
+            }
+        };
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_CELLBACKGROUNDCOLOR, new Class[]{HeaderCell.class, TextCell.class, PollEditTextCell.class, UserCell.class}, null, null, null, Theme.key_windowBackgroundWhite));
+        arrayList.add(new ThemeDescription(this.fragmentView, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_windowBackgroundGray));
+        ActionBar actionBar = this.actionBar;
+        int i = ThemeDescription.FLAG_BACKGROUND;
+        int i2 = Theme.key_actionBarDefault;
+        arrayList.add(new ThemeDescription(actionBar, i, null, null, null, null, i2));
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_LISTGLOWCOLOR, null, null, null, null, i2));
+        arrayList.add(new ThemeDescription(this.actionBar, ThemeDescription.FLAG_AB_ITEMSCOLOR, null, null, null, null, Theme.key_actionBarDefaultIcon));
+        arrayList.add(new ThemeDescription(this.actionBar, ThemeDescription.FLAG_AB_TITLECOLOR, null, null, null, null, Theme.key_actionBarDefaultTitle));
+        arrayList.add(new ThemeDescription(this.actionBar, ThemeDescription.FLAG_AB_SELECTORCOLOR, null, null, null, null, Theme.key_actionBarDefaultSelector));
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_SELECTOR, null, null, null, null, Theme.key_listSelector));
+        arrayList.add(new ThemeDescription(this.listView, 0, new Class[]{View.class}, Theme.dividerPaint, null, null, Theme.key_divider));
+        arrayList.add(new ThemeDescription(this.listView, 0, new Class[]{HeaderCell.class}, new String[]{"textView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, Theme.key_windowBackgroundWhiteBlueHeader));
+        int i3 = Theme.key_windowBackgroundWhiteBlackText;
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_CHECKTAG, new Class[]{TextCell.class}, new String[]{"textView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, i3));
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_CHECKTAG, new Class[]{TextCell.class}, new String[]{"textView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, Theme.key_text_RedRegular));
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_CHECKTAG, new Class[]{TextCell.class}, new String[]{"textView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, Theme.key_windowBackgroundWhiteBlueText4));
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_CHECKTAG, new Class[]{TextCell.class}, new String[]{"ImageView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, Theme.key_switchTrackChecked));
+        int i4 = Theme.key_windowBackgroundGrayShadow;
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_BACKGROUNDFILTER, new Class[]{ShadowSectionCell.class}, null, null, null, i4));
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_BACKGROUNDFILTER, new Class[]{TextInfoPrivacyCell.class}, null, null, null, i4));
+        arrayList.add(new ThemeDescription(this.listView, 0, new Class[]{TextInfoPrivacyCell.class}, new String[]{"textView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, Theme.key_windowBackgroundWhiteGrayText4));
+        arrayList.add(new ThemeDescription(this.listView, ThemeDescription.FLAG_TEXTCOLOR, new Class[]{UserCell.class}, new String[]{"adminTextView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, Theme.key_profile_creatorIcon));
+        arrayList.add(new ThemeDescription(this.listView, 0, new Class[]{UserCell.class}, new String[]{"imageView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, Theme.key_windowBackgroundWhiteGrayIcon));
+        arrayList.add(new ThemeDescription(this.listView, 0, new Class[]{UserCell.class}, new String[]{"nameTextView"}, (Paint[]) null, (Drawable[]) null, (ThemeDescription.ThemeDescriptionDelegate) null, i3));
+        arrayList.add(new ThemeDescription(this.listView, 0, new Class[]{UserCell.class}, new String[]{"statusColor"}, (Paint[]) null, (Drawable[]) null, themeDescriptionDelegate, Theme.key_windowBackgroundWhiteGrayText));
+        arrayList.add(new ThemeDescription(this.listView, 0, new Class[]{UserCell.class}, new String[]{"statusOnlineColor"}, (Paint[]) null, (Drawable[]) null, themeDescriptionDelegate, Theme.key_windowBackgroundWhiteBlueText));
+        arrayList.add(new ThemeDescription(this.listView, 0, new Class[]{UserCell.class}, null, Theme.avatarDrawables, null, Theme.key_avatar_text));
+        arrayList.add(new ThemeDescription(null, 0, null, null, null, themeDescriptionDelegate, Theme.key_avatar_backgroundRed));
+        arrayList.add(new ThemeDescription(null, 0, null, null, null, themeDescriptionDelegate, Theme.key_avatar_backgroundOrange));
+        arrayList.add(new ThemeDescription(null, 0, null, null, null, themeDescriptionDelegate, Theme.key_avatar_backgroundViolet));
+        arrayList.add(new ThemeDescription(null, 0, null, null, null, themeDescriptionDelegate, Theme.key_avatar_backgroundGreen));
+        arrayList.add(new ThemeDescription(null, 0, null, null, null, themeDescriptionDelegate, Theme.key_avatar_backgroundCyan));
+        arrayList.add(new ThemeDescription(null, 0, null, null, null, themeDescriptionDelegate, Theme.key_avatar_backgroundBlue));
+        arrayList.add(new ThemeDescription(null, 0, null, null, null, themeDescriptionDelegate, Theme.key_avatar_backgroundPink));
+        return arrayList;
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$getThemeDescriptions$14() {
+        RecyclerListView recyclerListView = this.listView;
+        if (recyclerListView != null) {
+            int childCount = recyclerListView.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View childAt = this.listView.getChildAt(i);
+                if (childAt instanceof UserCell) {
+                    ((UserCell) childAt).update(0);
+                }
+            }
+        }
+    }
+}

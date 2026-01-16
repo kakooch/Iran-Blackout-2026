@@ -1,0 +1,135 @@
+package ir.eitaa.ui.Components;
+
+import android.annotation.SuppressLint;
+import android.view.Gravity;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import ir.eitaa.messenger.AndroidUtilities;
+import ir.eitaa.messenger.LocaleController;
+
+/* loaded from: classes3.dex */
+public class LayoutHelper {
+    private static int getSize(float size) {
+        if (size >= 0.0f) {
+            size = AndroidUtilities.dp(size);
+        }
+        return (int) size;
+    }
+
+    private static int getAbsoluteGravity(int i) {
+        return Gravity.getAbsoluteGravity(i, LocaleController.isRTL ? 1 : 0);
+    }
+
+    @SuppressLint({"RtlHardcoded"})
+    public static int getAbsoluteGravityStart() {
+        return LocaleController.isRTL ? 5 : 3;
+    }
+
+    public static FrameLayout.LayoutParams createScroll(int width, int height, int gravity) {
+        return new FrameLayout.LayoutParams(getSize(width), getSize(height), gravity);
+    }
+
+    public static FrameLayout.LayoutParams createFrame(int width, float height, int gravity, float leftMargin, float topMargin, float rightMargin, float bottomMargin) {
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(getSize(width), getSize(height), gravity);
+        layoutParams.setMargins(AndroidUtilities.dp(leftMargin), AndroidUtilities.dp(topMargin), AndroidUtilities.dp(rightMargin), AndroidUtilities.dp(bottomMargin));
+        return layoutParams;
+    }
+
+    public static FrameLayout.LayoutParams createFrame(int width, int height, int gravity) {
+        return new FrameLayout.LayoutParams(getSize(width), getSize(height), gravity);
+    }
+
+    public static FrameLayout.LayoutParams createFrame(int width, float height) {
+        return new FrameLayout.LayoutParams(getSize(width), getSize(height));
+    }
+
+    public static FrameLayout.LayoutParams createFrameRelatively(float width, float height, int gravity, float startMargin, float topMargin, float endMargin, float bottomMargin) {
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(getSize(width), getSize(height), getAbsoluteGravity(gravity));
+        layoutParams.leftMargin = AndroidUtilities.dp(LocaleController.isRTL ? endMargin : startMargin);
+        layoutParams.topMargin = AndroidUtilities.dp(topMargin);
+        if (!LocaleController.isRTL) {
+            startMargin = endMargin;
+        }
+        layoutParams.rightMargin = AndroidUtilities.dp(startMargin);
+        layoutParams.bottomMargin = AndroidUtilities.dp(bottomMargin);
+        return layoutParams;
+    }
+
+    public static FrameLayout.LayoutParams createFrameRelatively(float width, float height, int gravity) {
+        return new FrameLayout.LayoutParams(getSize(width), getSize(height), getAbsoluteGravity(gravity));
+    }
+
+    public static RelativeLayout.LayoutParams createRelative(float width, float height, int leftMargin, int topMargin, int rightMargin, int bottomMargin, int alignParent, int alignRelative, int anchorRelative) {
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(getSize(width), getSize(height));
+        if (alignParent >= 0) {
+            layoutParams.addRule(alignParent);
+        }
+        if (alignRelative >= 0 && anchorRelative >= 0) {
+            layoutParams.addRule(alignRelative, anchorRelative);
+        }
+        layoutParams.leftMargin = AndroidUtilities.dp(leftMargin);
+        layoutParams.topMargin = AndroidUtilities.dp(topMargin);
+        layoutParams.rightMargin = AndroidUtilities.dp(rightMargin);
+        layoutParams.bottomMargin = AndroidUtilities.dp(bottomMargin);
+        return layoutParams;
+    }
+
+    public static RelativeLayout.LayoutParams createRelative(int width, int height, int leftMargin, int topMargin, int rightMargin, int bottomMargin, int alignParent) {
+        return createRelative(width, height, leftMargin, topMargin, rightMargin, bottomMargin, alignParent, -1, -1);
+    }
+
+    public static RelativeLayout.LayoutParams createRelative(int width, int height) {
+        return createRelative(width, height, 0, 0, 0, 0, -1, -1, -1);
+    }
+
+    public static RelativeLayout.LayoutParams createRelative(int width, int height, int alignParent) {
+        return createRelative(width, height, 0, 0, 0, 0, alignParent, -1, -1);
+    }
+
+    public static LinearLayout.LayoutParams createLinear(int width, int height, float weight, int gravity, int leftMargin, int topMargin, int rightMargin, int bottomMargin) {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(getSize(width), getSize(height), weight);
+        layoutParams.setMargins(AndroidUtilities.dp(leftMargin), AndroidUtilities.dp(topMargin), AndroidUtilities.dp(rightMargin), AndroidUtilities.dp(bottomMargin));
+        layoutParams.gravity = gravity;
+        return layoutParams;
+    }
+
+    public static LinearLayout.LayoutParams createLinear(int width, int height, float weight, int leftMargin, int topMargin, int rightMargin, int bottomMargin) {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(getSize(width), getSize(height), weight);
+        layoutParams.setMargins(AndroidUtilities.dp(leftMargin), AndroidUtilities.dp(topMargin), AndroidUtilities.dp(rightMargin), AndroidUtilities.dp(bottomMargin));
+        return layoutParams;
+    }
+
+    public static LinearLayout.LayoutParams createLinear(int width, int height, int gravity, int leftMargin, int topMargin, int rightMargin, int bottomMargin) {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(getSize(width), getSize(height));
+        layoutParams.setMargins(AndroidUtilities.dp(leftMargin), AndroidUtilities.dp(topMargin), AndroidUtilities.dp(rightMargin), AndroidUtilities.dp(bottomMargin));
+        layoutParams.gravity = gravity;
+        return layoutParams;
+    }
+
+    public static LinearLayout.LayoutParams createLinear(int width, int height, float leftMargin, float topMargin, float rightMargin, float bottomMargin) {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(getSize(width), getSize(height));
+        layoutParams.setMargins(AndroidUtilities.dp(leftMargin), AndroidUtilities.dp(topMargin), AndroidUtilities.dp(rightMargin), AndroidUtilities.dp(bottomMargin));
+        return layoutParams;
+    }
+
+    public static LinearLayout.LayoutParams createLinear(int width, int height, float weight, int gravity) {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(getSize(width), getSize(height), weight);
+        layoutParams.gravity = gravity;
+        return layoutParams;
+    }
+
+    public static LinearLayout.LayoutParams createLinear(int width, int height, int gravity) {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(getSize(width), getSize(height));
+        layoutParams.gravity = gravity;
+        return layoutParams;
+    }
+
+    public static LinearLayout.LayoutParams createLinear(int width, int height, float weight) {
+        return new LinearLayout.LayoutParams(getSize(width), getSize(height), weight);
+    }
+
+    public static LinearLayout.LayoutParams createLinear(int width, int height) {
+        return new LinearLayout.LayoutParams(getSize(width), getSize(height));
+    }
+}

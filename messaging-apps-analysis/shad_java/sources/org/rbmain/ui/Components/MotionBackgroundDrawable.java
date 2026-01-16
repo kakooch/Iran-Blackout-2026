@@ -1,0 +1,695 @@
+package org.rbmain.ui.Components;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
+import android.graphics.BlendMode;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.ComposeShader;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
+import android.os.SystemClock;
+import android.view.View;
+import java.lang.ref.WeakReference;
+import org.rbmain.messenger.AndroidUtilities;
+import org.rbmain.messenger.FileLog;
+import org.rbmain.messenger.GenericProvider;
+import org.rbmain.messenger.LiteMode;
+import org.rbmain.messenger.NotificationCenter;
+import org.rbmain.messenger.Utilities;
+import org.rbmain.tgnet.ConnectionsManager;
+
+/* loaded from: classes5.dex */
+public class MotionBackgroundDrawable extends Drawable {
+    private static boolean errorWhileGenerateLegacyBitmap;
+    private static float legacyBitmapScale;
+    private static final boolean useLegacyBitmap;
+    private static final boolean useSoftLight;
+    private int alpha;
+    private GenericProvider<MotionBackgroundDrawable, Float> animationProgressProvider;
+    private float backgroundAlpha;
+    private BitmapShader bitmapShader;
+    private int[] colors;
+    private Bitmap currentBitmap;
+    private boolean disableGradientShaderScaling;
+    private boolean fastAnimation;
+    private Canvas gradientCanvas;
+    private GradientDrawable gradientDrawable;
+    private Bitmap gradientFromBitmap;
+    private Canvas gradientFromCanvas;
+    private BitmapShader gradientShader;
+    private Bitmap[] gradientToBitmap;
+    private boolean ignoreInterpolator;
+    private float indeterminateSpeedScale;
+    private int intensity;
+    private final CubicBezierInterpolator interpolator;
+    private boolean invalidateLegacy;
+    private boolean isIndeterminateAnimation;
+    private boolean isPreview;
+    private long lastUpdateTime;
+    private Bitmap legacyBitmap;
+    private Bitmap legacyBitmap2;
+    private int legacyBitmapColor;
+    private ColorFilter legacyBitmapColorFilter;
+    private Canvas legacyCanvas;
+    private Canvas legacyCanvas2;
+    private Matrix matrix;
+    private Paint overrideBitmapPaint;
+    private Paint paint;
+    private Paint paint2;
+    private Paint paint3;
+    private WeakReference<View> parentView;
+    private float patternAlpha;
+    private Bitmap patternBitmap;
+    private android.graphics.Rect patternBounds;
+    private ColorFilter patternColorFilter;
+    private int phase;
+    public float posAnimationProgress;
+    private boolean postInvalidateParent;
+    private RectF rect;
+    private boolean rotatingPreview;
+    private boolean rotationBack;
+    private int roundRadius;
+    private int translationY;
+    private Runnable updateAnimationRunnable;
+
+    @Override // android.graphics.drawable.Drawable
+    public int getOpacity() {
+        return -2;
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public void setColorFilter(ColorFilter colorFilter) {
+    }
+
+    static {
+        int i = Build.VERSION.SDK_INT;
+        useLegacyBitmap = i < 28;
+        useSoftLight = i >= 29;
+        errorWhileGenerateLegacyBitmap = false;
+        legacyBitmapScale = 0.7f;
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$new$0() {
+        updateAnimation(true);
+    }
+
+    public MotionBackgroundDrawable() {
+        this.colors = new int[]{-12423849, -531317, -7888252, -133430};
+        this.interpolator = new CubicBezierInterpolator(0.33d, 0.0d, 0.0d, 1.0d);
+        this.posAnimationProgress = 1.0f;
+        this.rect = new RectF();
+        this.gradientToBitmap = new Bitmap[3];
+        this.paint = new Paint(2);
+        this.paint2 = new Paint(2);
+        this.paint3 = new Paint();
+        this.intensity = 100;
+        this.gradientDrawable = new GradientDrawable();
+        this.updateAnimationRunnable = new Runnable() { // from class: org.rbmain.ui.Components.MotionBackgroundDrawable$$ExternalSyntheticLambda0
+            @Override // java.lang.Runnable
+            public final void run() {
+                this.f$0.lambda$new$0();
+            }
+        };
+        this.patternBounds = new android.graphics.Rect();
+        this.patternAlpha = 1.0f;
+        this.backgroundAlpha = 1.0f;
+        this.alpha = 255;
+        this.indeterminateSpeedScale = 1.0f;
+        init();
+    }
+
+    public MotionBackgroundDrawable(int i, int i2, int i3, int i4, boolean z) {
+        this(i, i2, i3, i4, 0, z);
+    }
+
+    public MotionBackgroundDrawable(int i, int i2, int i3, int i4, int i5, boolean z) {
+        this.colors = new int[]{-12423849, -531317, -7888252, -133430};
+        this.interpolator = new CubicBezierInterpolator(0.33d, 0.0d, 0.0d, 1.0d);
+        this.posAnimationProgress = 1.0f;
+        this.rect = new RectF();
+        this.gradientToBitmap = new Bitmap[3];
+        this.paint = new Paint(2);
+        this.paint2 = new Paint(2);
+        this.paint3 = new Paint();
+        this.intensity = 100;
+        this.gradientDrawable = new GradientDrawable();
+        this.updateAnimationRunnable = new Runnable() { // from class: org.rbmain.ui.Components.MotionBackgroundDrawable$$ExternalSyntheticLambda0
+            @Override // java.lang.Runnable
+            public final void run() {
+                this.f$0.lambda$new$0();
+            }
+        };
+        this.patternBounds = new android.graphics.Rect();
+        this.patternAlpha = 1.0f;
+        this.backgroundAlpha = 1.0f;
+        this.alpha = 255;
+        this.indeterminateSpeedScale = 1.0f;
+        this.isPreview = z;
+        setColors(i, i2, i3, i4, i5, false);
+        init();
+    }
+
+    private void init() {
+        this.currentBitmap = Bitmap.createBitmap(60, 80, Bitmap.Config.ARGB_8888);
+        for (int i = 0; i < 3; i++) {
+            this.gradientToBitmap[i] = Bitmap.createBitmap(60, 80, Bitmap.Config.ARGB_8888);
+        }
+        this.gradientCanvas = new Canvas(this.currentBitmap);
+        this.gradientFromBitmap = Bitmap.createBitmap(60, 80, Bitmap.Config.ARGB_8888);
+        this.gradientFromCanvas = new Canvas(this.gradientFromBitmap);
+        Utilities.generateGradient(this.currentBitmap, true, this.phase, this.interpolator.getInterpolation(this.posAnimationProgress), this.currentBitmap.getWidth(), this.currentBitmap.getHeight(), this.currentBitmap.getRowBytes(), this.colors);
+        if (useSoftLight) {
+            this.paint2.setBlendMode(BlendMode.SOFT_LIGHT);
+        }
+    }
+
+    public void setRoundRadius(int i) {
+        this.roundRadius = i;
+        this.matrix = new Matrix();
+        Bitmap bitmap = this.currentBitmap;
+        Shader.TileMode tileMode = Shader.TileMode.CLAMP;
+        BitmapShader bitmapShader = new BitmapShader(bitmap, tileMode, tileMode);
+        this.bitmapShader = bitmapShader;
+        this.paint.setShader(bitmapShader);
+        invalidateParent();
+    }
+
+    public BitmapShader getBitmapShader() {
+        return this.bitmapShader;
+    }
+
+    public Bitmap getBitmap() {
+        return this.currentBitmap;
+    }
+
+    public Bitmap getPatternBitmap() {
+        return this.patternBitmap;
+    }
+
+    public int getIntensity() {
+        return this.intensity;
+    }
+
+    public static boolean isDark(int i, int i2, int i3, int i4) {
+        int averageColor = AndroidUtilities.getAverageColor(i, i2);
+        if (i3 != 0) {
+            averageColor = AndroidUtilities.getAverageColor(averageColor, i3);
+        }
+        if (i4 != 0) {
+            averageColor = AndroidUtilities.getAverageColor(averageColor, i4);
+        }
+        return AndroidUtilities.RGBtoHSB(Color.red(averageColor), Color.green(averageColor), Color.blue(averageColor))[2] < 0.3f;
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public void setBounds(android.graphics.Rect rect) {
+        super.setBounds(rect);
+        this.patternBounds.set(rect);
+    }
+
+    public static int getPatternColor(int i, int i2, int i3, int i4) {
+        if (isDark(i, i2, i3, i4)) {
+            if (useSoftLight) {
+                return -1;
+            }
+            return ConnectionsManager.DEFAULT_DATACENTER_ID;
+        }
+        if (useSoftLight) {
+            return -16777216;
+        }
+        int averageColor = AndroidUtilities.getAverageColor(i3, AndroidUtilities.getAverageColor(i, i2));
+        if (i4 != 0) {
+            averageColor = AndroidUtilities.getAverageColor(i4, averageColor);
+        }
+        return (AndroidUtilities.getPatternColor(averageColor, true) & 16777215) | 1677721600;
+    }
+
+    public int getPatternColor() {
+        int[] iArr = this.colors;
+        return getPatternColor(iArr[0], iArr[1], iArr[2], iArr[3]);
+    }
+
+    public int getPhase() {
+        return this.phase;
+    }
+
+    public void setPostInvalidateParent(boolean z) {
+        this.postInvalidateParent = z;
+    }
+
+    public void rotatePreview(boolean z) {
+        if (this.posAnimationProgress < 1.0f) {
+            return;
+        }
+        this.rotatingPreview = true;
+        this.posAnimationProgress = 0.0f;
+        this.rotationBack = z;
+        invalidateParent();
+    }
+
+    public void setPhase(int i) {
+        this.phase = i;
+        if (i < 0) {
+            this.phase = 0;
+        } else if (i > 7) {
+            this.phase = 7;
+        }
+        Utilities.generateGradient(this.currentBitmap, true, this.phase, this.interpolator.getInterpolation(this.posAnimationProgress), this.currentBitmap.getWidth(), this.currentBitmap.getHeight(), this.currentBitmap.getRowBytes(), this.colors);
+    }
+
+    public void switchToNextPosition() {
+        switchToNextPosition(false);
+    }
+
+    public void switchToNextPosition(boolean z) {
+        if (this.posAnimationProgress < 1.0f || !LiteMode.isEnabled(32)) {
+            return;
+        }
+        this.rotatingPreview = false;
+        this.rotationBack = false;
+        this.fastAnimation = z;
+        this.posAnimationProgress = 0.0f;
+        int i = this.phase - 1;
+        this.phase = i;
+        if (i < 0) {
+            this.phase = 7;
+        }
+        invalidateParent();
+        this.gradientFromCanvas.drawBitmap(this.currentBitmap, 0.0f, 0.0f, (Paint) null);
+        generateNextGradient();
+    }
+
+    public void generateNextGradient() {
+        if (useLegacyBitmap && this.intensity < 0) {
+            try {
+                if (this.legacyBitmap != null) {
+                    Bitmap bitmap = this.legacyBitmap2;
+                    if (bitmap == null || bitmap.getHeight() != this.legacyBitmap.getHeight() || this.legacyBitmap2.getWidth() != this.legacyBitmap.getWidth()) {
+                        Bitmap bitmap2 = this.legacyBitmap2;
+                        if (bitmap2 != null) {
+                            bitmap2.recycle();
+                        }
+                        this.legacyBitmap2 = Bitmap.createBitmap(this.legacyBitmap.getWidth(), this.legacyBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+                        this.legacyCanvas2 = new Canvas(this.legacyBitmap2);
+                    } else {
+                        this.legacyBitmap2.eraseColor(0);
+                    }
+                    this.legacyCanvas2.drawBitmap(this.legacyBitmap, 0.0f, 0.0f, (Paint) null);
+                }
+            } catch (Throwable th) {
+                FileLog.e(th);
+                Bitmap bitmap3 = this.legacyBitmap2;
+                if (bitmap3 != null) {
+                    bitmap3.recycle();
+                    this.legacyBitmap2 = null;
+                }
+            }
+            Bitmap bitmap4 = this.currentBitmap;
+            Utilities.generateGradient(bitmap4, true, this.phase, 1.0f, bitmap4.getWidth(), this.currentBitmap.getHeight(), this.currentBitmap.getRowBytes(), this.colors);
+            this.invalidateLegacy = true;
+        }
+        int i = -1;
+        while (i < 3) {
+            int i2 = i + 1;
+            Utilities.generateGradient(i < 0 ? this.gradientFromBitmap : this.gradientToBitmap[i], true, this.phase, i2 / 3.0f, this.currentBitmap.getWidth(), this.currentBitmap.getHeight(), this.currentBitmap.getRowBytes(), this.colors);
+            i = i2;
+        }
+    }
+
+    public int[] getColors() {
+        return this.colors;
+    }
+
+    public void setParentView(View view) {
+        this.parentView = new WeakReference<>(view);
+    }
+
+    public void setColors(int i, int i2, int i3, int i4) {
+        setColors(i, i2, i3, i4, 0, true);
+    }
+
+    public void setColors(int i, int i2, int i3, int i4, Bitmap bitmap) {
+        int[] iArr = this.colors;
+        iArr[0] = i;
+        iArr[1] = i2;
+        iArr[2] = i3;
+        iArr[3] = i4;
+        Utilities.generateGradient(bitmap, true, this.phase, this.interpolator.getInterpolation(this.posAnimationProgress), this.currentBitmap.getWidth(), this.currentBitmap.getHeight(), this.currentBitmap.getRowBytes(), this.colors);
+    }
+
+    public void setColors(int i, int i2, int i3, int i4, int i5, boolean z) {
+        if (this.isPreview && i3 == 0 && i4 == 0) {
+            this.gradientDrawable = new GradientDrawable(BackgroundGradientDrawable.getGradientOrientation(i5), new int[]{i, i2});
+        } else {
+            this.gradientDrawable = null;
+        }
+        int[] iArr = this.colors;
+        if (iArr[0] == i && iArr[1] == i2 && iArr[2] == i3 && iArr[3] == i4) {
+            return;
+        }
+        iArr[0] = i;
+        iArr[1] = i2;
+        iArr[2] = i3;
+        iArr[3] = i4;
+        Bitmap bitmap = this.currentBitmap;
+        if (bitmap != null) {
+            Utilities.generateGradient(bitmap, true, this.phase, this.interpolator.getInterpolation(this.posAnimationProgress), this.currentBitmap.getWidth(), this.currentBitmap.getHeight(), this.currentBitmap.getRowBytes(), this.colors);
+            if (z) {
+                invalidateParent();
+            }
+        }
+    }
+
+    private void invalidateParent() {
+        invalidateSelf();
+        WeakReference<View> weakReference = this.parentView;
+        if (weakReference != null && weakReference.get() != null) {
+            this.parentView.get().invalidate();
+        }
+        if (this.postInvalidateParent) {
+            NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.invalidateMotionBackground, new Object[0]);
+            updateAnimation(false);
+            AndroidUtilities.cancelRunOnUIThread(this.updateAnimationRunnable);
+            AndroidUtilities.runOnUIThread(this.updateAnimationRunnable, 16L);
+        }
+    }
+
+    public boolean hasPattern() {
+        return this.patternBitmap != null;
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public int getIntrinsicWidth() {
+        Bitmap bitmap = this.patternBitmap;
+        if (bitmap != null) {
+            return bitmap.getWidth();
+        }
+        return super.getIntrinsicWidth();
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public int getIntrinsicHeight() {
+        Bitmap bitmap = this.patternBitmap;
+        if (bitmap != null) {
+            return bitmap.getHeight();
+        }
+        return super.getIntrinsicHeight();
+    }
+
+    public void setTranslationY(int i) {
+        this.translationY = i;
+    }
+
+    public void setPatternBitmap(int i) {
+        setPatternBitmap(i, this.patternBitmap, true);
+    }
+
+    public void setPatternBitmap(int i, Bitmap bitmap) {
+        setPatternBitmap(i, bitmap, true);
+    }
+
+    public void setPatternBitmap(int i, Bitmap bitmap, boolean z) {
+        this.intensity = i;
+        this.patternBitmap = bitmap;
+        this.invalidateLegacy = true;
+        if (bitmap == null) {
+            return;
+        }
+        if (useSoftLight) {
+            if (i >= 0) {
+                this.paint2.setBlendMode(BlendMode.SOFT_LIGHT);
+            } else {
+                this.paint2.setBlendMode(null);
+            }
+        }
+        if (i < 0) {
+            if (!useLegacyBitmap) {
+                Bitmap bitmap2 = this.currentBitmap;
+                Shader.TileMode tileMode = Shader.TileMode.CLAMP;
+                this.bitmapShader = new BitmapShader(bitmap2, tileMode, tileMode);
+                Bitmap bitmap3 = this.patternBitmap;
+                Shader.TileMode tileMode2 = Shader.TileMode.REPEAT;
+                this.gradientShader = new BitmapShader(bitmap3, tileMode2, tileMode2);
+                this.disableGradientShaderScaling = z;
+                this.paint2.setShader(new ComposeShader(this.bitmapShader, this.gradientShader, PorterDuff.Mode.DST_IN));
+                this.paint2.setFilterBitmap(true);
+                this.matrix = new Matrix();
+                return;
+            }
+            createLegacyBitmap();
+            if (!errorWhileGenerateLegacyBitmap) {
+                this.paint2.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+                return;
+            } else {
+                this.paint2.setXfermode(null);
+                return;
+            }
+        }
+        if (useLegacyBitmap) {
+            this.paint2.setXfermode(null);
+        }
+    }
+
+    public void setPatternColorFilter(int i) {
+        this.patternColorFilter = new PorterDuffColorFilter(i, PorterDuff.Mode.SRC_IN);
+        invalidateParent();
+    }
+
+    public void setPatternAlpha(float f) {
+        this.patternAlpha = f;
+        invalidateParent();
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public void setBounds(int i, int i2, int i3, int i4) {
+        super.setBounds(i, i2, i3, i4);
+        this.patternBounds.set(i, i2, i3, i4);
+        createLegacyBitmap();
+    }
+
+    private void createLegacyBitmap() {
+        if (!useLegacyBitmap || this.intensity >= 0 || errorWhileGenerateLegacyBitmap) {
+            return;
+        }
+        int iWidth = (int) (this.patternBounds.width() * legacyBitmapScale);
+        int iHeight = (int) (this.patternBounds.height() * legacyBitmapScale);
+        if (iWidth <= 0 || iHeight <= 0) {
+            return;
+        }
+        Bitmap bitmap = this.legacyBitmap;
+        if (bitmap != null && bitmap.getWidth() == iWidth && this.legacyBitmap.getHeight() == iHeight) {
+            return;
+        }
+        Bitmap bitmap2 = this.legacyBitmap;
+        if (bitmap2 != null) {
+            bitmap2.recycle();
+        }
+        Bitmap bitmap3 = this.legacyBitmap2;
+        if (bitmap3 != null) {
+            bitmap3.recycle();
+            this.legacyBitmap2 = null;
+        }
+        try {
+            this.legacyBitmap = Bitmap.createBitmap(iWidth, iHeight, Bitmap.Config.ARGB_8888);
+            this.legacyCanvas = new Canvas(this.legacyBitmap);
+            this.invalidateLegacy = true;
+        } catch (Throwable th) {
+            Bitmap bitmap4 = this.legacyBitmap;
+            if (bitmap4 != null) {
+                bitmap4.recycle();
+                this.legacyBitmap = null;
+            }
+            FileLog.e(th);
+            errorWhileGenerateLegacyBitmap = true;
+            this.paint2.setXfermode(null);
+        }
+    }
+
+    /* JADX WARN: Removed duplicated region for block: B:36:0x01e5  */
+    @Override // android.graphics.drawable.Drawable
+    /*
+        Code decompiled incorrectly, please refer to instructions dump.
+        To view partially-correct add '--show-bad-code' argument
+    */
+    public void draw(android.graphics.Canvas r17) {
+        /*
+            Method dump skipped, instructions count: 942
+            To view this dump add '--comments-level debug' option
+        */
+        throw new UnsupportedOperationException("Method not decompiled: org.rbmain.ui.Components.MotionBackgroundDrawable.draw(android.graphics.Canvas):void");
+    }
+
+    public void updateAnimation(boolean z) {
+        float interpolation;
+        float f;
+        float interpolation2;
+        long jElapsedRealtime = SystemClock.elapsedRealtime();
+        long j = jElapsedRealtime - this.lastUpdateTime;
+        if (j > 20) {
+            j = 17;
+        }
+        this.lastUpdateTime = jElapsedRealtime;
+        if (j <= 1) {
+            return;
+        }
+        boolean z2 = this.isIndeterminateAnimation;
+        if (z2 && this.posAnimationProgress == 1.0f) {
+            this.posAnimationProgress = 0.0f;
+        }
+        float f2 = this.posAnimationProgress;
+        if (f2 < 1.0f) {
+            boolean z3 = this.postInvalidateParent || this.rotatingPreview;
+            if (z2) {
+                float f3 = f2 + ((j / 12000.0f) * this.indeterminateSpeedScale);
+                this.posAnimationProgress = f3;
+                if (f3 >= 1.0f) {
+                    this.posAnimationProgress = 0.0f;
+                }
+                float f4 = this.posAnimationProgress;
+                int i = (int) (f4 / 0.125f);
+                this.phase = i;
+                f = 1.0f - ((f4 - (i * 0.125f)) / 0.125f);
+                z3 = true;
+            } else {
+                if (this.rotatingPreview) {
+                    float interpolation3 = this.interpolator.getInterpolation(f2);
+                    char c = interpolation3 <= 0.25f ? (char) 0 : interpolation3 <= 0.5f ? (char) 1 : interpolation3 <= 0.75f ? (char) 2 : (char) 3;
+                    GenericProvider<MotionBackgroundDrawable, Float> genericProvider = this.animationProgressProvider;
+                    if (genericProvider != null) {
+                        this.posAnimationProgress = genericProvider.provide(this).floatValue();
+                    } else {
+                        this.posAnimationProgress += j / (this.rotationBack ? 1000.0f : 2000.0f);
+                    }
+                    if (this.posAnimationProgress > 1.0f) {
+                        this.posAnimationProgress = 1.0f;
+                    }
+                    if (this.animationProgressProvider == null && !this.ignoreInterpolator) {
+                        interpolation2 = this.interpolator.getInterpolation(this.posAnimationProgress);
+                    } else {
+                        interpolation2 = this.posAnimationProgress;
+                    }
+                    if (this.ignoreInterpolator && (interpolation2 == 0.0f || interpolation2 == 1.0f)) {
+                        this.ignoreInterpolator = false;
+                    }
+                    if ((c == 0 && interpolation2 > 0.25f) || ((c == 1 && interpolation2 > 0.5f) || (c == 2 && interpolation2 > 0.75f))) {
+                        if (this.rotationBack) {
+                            int i2 = this.phase + 1;
+                            this.phase = i2;
+                            if (i2 > 7) {
+                                this.phase = 0;
+                            }
+                        } else {
+                            int i3 = this.phase - 1;
+                            this.phase = i3;
+                            if (i3 < 0) {
+                                this.phase = 7;
+                            }
+                        }
+                    }
+                    if (interpolation2 > 0.25f) {
+                        interpolation2 = interpolation2 <= 0.5f ? interpolation2 - 0.25f : interpolation2 <= 0.75f ? interpolation2 - 0.5f : interpolation2 - 0.75f;
+                    }
+                    float f5 = interpolation2 / 0.25f;
+                    if (this.rotationBack) {
+                        interpolation = 1.0f - f5;
+                        if (this.posAnimationProgress >= 1.0f) {
+                            int i4 = this.phase + 1;
+                            this.phase = i4;
+                            if (i4 > 7) {
+                                this.phase = 0;
+                            }
+                            interpolation = 1.0f;
+                        }
+                    } else {
+                        interpolation = f5;
+                    }
+                } else {
+                    GenericProvider<MotionBackgroundDrawable, Float> genericProvider2 = this.animationProgressProvider;
+                    if (genericProvider2 != null) {
+                        this.posAnimationProgress = genericProvider2.provide(this).floatValue();
+                    } else {
+                        this.posAnimationProgress = f2 + (j / (this.fastAnimation ? 300.0f : 500.0f));
+                    }
+                    if (this.posAnimationProgress > 1.0f) {
+                        this.posAnimationProgress = 1.0f;
+                    }
+                    if (this.animationProgressProvider == null && !this.ignoreInterpolator) {
+                        interpolation = this.interpolator.getInterpolation(this.posAnimationProgress);
+                    } else {
+                        interpolation = this.posAnimationProgress;
+                    }
+                    if (this.ignoreInterpolator && (interpolation == 0.0f || interpolation == 1.0f)) {
+                        this.ignoreInterpolator = false;
+                    }
+                    if (this.rotationBack) {
+                        interpolation = 1.0f - interpolation;
+                        if (this.posAnimationProgress >= 1.0f) {
+                            int i5 = this.phase + 1;
+                            this.phase = i5;
+                            if (i5 > 7) {
+                                this.phase = 0;
+                            }
+                            f = 1.0f;
+                        }
+                    }
+                }
+                f = interpolation;
+            }
+            if (z3) {
+                Bitmap bitmap = this.currentBitmap;
+                Utilities.generateGradient(bitmap, true, this.phase, f, bitmap.getWidth(), this.currentBitmap.getHeight(), this.currentBitmap.getRowBytes(), this.colors);
+                this.invalidateLegacy = true;
+            } else if (!useLegacyBitmap || this.intensity >= 0) {
+                if (f != 1.0f) {
+                    int i6 = (int) (f / 0.33333334f);
+                    if (i6 == 0) {
+                        this.gradientCanvas.drawBitmap(this.gradientFromBitmap, 0.0f, 0.0f, (Paint) null);
+                    } else {
+                        this.gradientCanvas.drawBitmap(this.gradientToBitmap[i6 - 1], 0.0f, 0.0f, (Paint) null);
+                    }
+                    this.paint3.setAlpha((int) (((f - (i6 * 0.33333334f)) / 0.33333334f) * 255.0f));
+                    this.gradientCanvas.drawBitmap(this.gradientToBitmap[i6], 0.0f, 0.0f, this.paint3);
+                } else {
+                    this.gradientCanvas.drawBitmap(this.gradientToBitmap[2], 0.0f, 0.0f, this.paint3);
+                }
+            }
+            if (z) {
+                invalidateParent();
+            }
+        }
+    }
+
+    @Override // android.graphics.drawable.Drawable
+    public void setAlpha(int i) {
+        this.alpha = i;
+        this.paint.setAlpha(i);
+        this.paint2.setAlpha(i);
+    }
+
+    public void setIndeterminateSpeedScale(float f) {
+        this.indeterminateSpeedScale = f;
+    }
+
+    public boolean isIndeterminateAnimation() {
+        return this.isIndeterminateAnimation;
+    }
+
+    public void setIndeterminateAnimation(boolean z) {
+        if (!z && this.isIndeterminateAnimation) {
+            this.posAnimationProgress = 1.0f - ((this.posAnimationProgress - (((int) (r1 / 0.125f)) * 0.125f)) / 0.125f);
+            this.ignoreInterpolator = true;
+        }
+        this.isIndeterminateAnimation = z;
+    }
+}

@@ -1,0 +1,208 @@
+package com.google.android.exoplayer2.source.hls;
+
+import android.net.Uri;
+import android.text.TextUtils;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.extractor.Extractor;
+import com.google.android.exoplayer2.extractor.ExtractorInput;
+import com.google.android.exoplayer2.extractor.mp3.Mp3Extractor;
+import com.google.android.exoplayer2.extractor.mp4.FragmentedMp4Extractor;
+import com.google.android.exoplayer2.extractor.ts.Ac3Extractor;
+import com.google.android.exoplayer2.extractor.ts.Ac4Extractor;
+import com.google.android.exoplayer2.extractor.ts.AdtsExtractor;
+import com.google.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory;
+import com.google.android.exoplayer2.extractor.ts.TsExtractor;
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.source.hls.HlsExtractorFactory;
+import com.google.android.exoplayer2.util.MimeTypes;
+import com.google.android.exoplayer2.util.TimestampAdjuster;
+import ir.eitaa.messenger.MediaController;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+/* loaded from: classes.dex */
+public final class DefaultHlsExtractorFactory implements HlsExtractorFactory {
+    private final boolean exposeCea608WhenMissingDeclarations;
+    private final int payloadReaderFactoryFlags;
+
+    public DefaultHlsExtractorFactory() {
+        this(0, true);
+    }
+
+    public DefaultHlsExtractorFactory(int payloadReaderFactoryFlags, boolean exposeCea608WhenMissingDeclarations) {
+        this.payloadReaderFactoryFlags = payloadReaderFactoryFlags;
+        this.exposeCea608WhenMissingDeclarations = exposeCea608WhenMissingDeclarations;
+    }
+
+    @Override // com.google.android.exoplayer2.source.hls.HlsExtractorFactory
+    public HlsExtractorFactory.Result createExtractor(Extractor previousExtractor, Uri uri, Format format, List<Format> muxedCaptionFormats, TimestampAdjuster timestampAdjuster, Map<String, List<String>> responseHeaders, ExtractorInput extractorInput) throws InterruptedException, IOException {
+        if (previousExtractor != null) {
+            if (isReusable(previousExtractor)) {
+                return buildResult(previousExtractor);
+            }
+            if (buildResultForSameExtractorType(previousExtractor, format, timestampAdjuster) == null) {
+                throw new IllegalArgumentException("Unexpected previousExtractor type: " + previousExtractor.getClass().getSimpleName());
+            }
+        }
+        Extractor extractorCreateExtractorByFileExtension = createExtractorByFileExtension(uri, format, muxedCaptionFormats, timestampAdjuster);
+        extractorInput.resetPeekPosition();
+        if (sniffQuietly(extractorCreateExtractorByFileExtension, extractorInput)) {
+            return buildResult(extractorCreateExtractorByFileExtension);
+        }
+        if (!(extractorCreateExtractorByFileExtension instanceof WebvttExtractor)) {
+            WebvttExtractor webvttExtractor = new WebvttExtractor(format.language, timestampAdjuster);
+            if (sniffQuietly(webvttExtractor, extractorInput)) {
+                return buildResult(webvttExtractor);
+            }
+        }
+        if (!(extractorCreateExtractorByFileExtension instanceof AdtsExtractor)) {
+            AdtsExtractor adtsExtractor = new AdtsExtractor();
+            if (sniffQuietly(adtsExtractor, extractorInput)) {
+                return buildResult(adtsExtractor);
+            }
+        }
+        if (!(extractorCreateExtractorByFileExtension instanceof Ac3Extractor)) {
+            Ac3Extractor ac3Extractor = new Ac3Extractor();
+            if (sniffQuietly(ac3Extractor, extractorInput)) {
+                return buildResult(ac3Extractor);
+            }
+        }
+        if (!(extractorCreateExtractorByFileExtension instanceof Ac4Extractor)) {
+            Ac4Extractor ac4Extractor = new Ac4Extractor();
+            if (sniffQuietly(ac4Extractor, extractorInput)) {
+                return buildResult(ac4Extractor);
+            }
+        }
+        if (!(extractorCreateExtractorByFileExtension instanceof Mp3Extractor)) {
+            Mp3Extractor mp3Extractor = new Mp3Extractor(0, 0L);
+            if (sniffQuietly(mp3Extractor, extractorInput)) {
+                return buildResult(mp3Extractor);
+            }
+        }
+        if (!(extractorCreateExtractorByFileExtension instanceof FragmentedMp4Extractor)) {
+            FragmentedMp4Extractor fragmentedMp4ExtractorCreateFragmentedMp4Extractor = createFragmentedMp4Extractor(timestampAdjuster, format, muxedCaptionFormats);
+            if (sniffQuietly(fragmentedMp4ExtractorCreateFragmentedMp4Extractor, extractorInput)) {
+                return buildResult(fragmentedMp4ExtractorCreateFragmentedMp4Extractor);
+            }
+        }
+        if (!(extractorCreateExtractorByFileExtension instanceof TsExtractor)) {
+            TsExtractor tsExtractorCreateTsExtractor = createTsExtractor(this.payloadReaderFactoryFlags, this.exposeCea608WhenMissingDeclarations, format, muxedCaptionFormats, timestampAdjuster);
+            if (sniffQuietly(tsExtractorCreateTsExtractor, extractorInput)) {
+                return buildResult(tsExtractorCreateTsExtractor);
+            }
+        }
+        return buildResult(extractorCreateExtractorByFileExtension);
+    }
+
+    private Extractor createExtractorByFileExtension(Uri uri, Format format, List<Format> muxedCaptionFormats, TimestampAdjuster timestampAdjuster) {
+        String lastPathSegment = uri.getLastPathSegment();
+        if (lastPathSegment == null) {
+            lastPathSegment = "";
+        }
+        if ("text/vtt".equals(format.sampleMimeType) || lastPathSegment.endsWith(".webvtt") || lastPathSegment.endsWith(".vtt")) {
+            return new WebvttExtractor(format.language, timestampAdjuster);
+        }
+        if (lastPathSegment.endsWith(".aac")) {
+            return new AdtsExtractor();
+        }
+        if (lastPathSegment.endsWith(".ac3") || lastPathSegment.endsWith(".ec3")) {
+            return new Ac3Extractor();
+        }
+        if (lastPathSegment.endsWith(".ac4")) {
+            return new Ac4Extractor();
+        }
+        if (lastPathSegment.endsWith(".mp3")) {
+            return new Mp3Extractor(0, 0L);
+        }
+        if (lastPathSegment.endsWith(".mp4") || lastPathSegment.startsWith(".m4", lastPathSegment.length() - 4) || lastPathSegment.startsWith(".mp4", lastPathSegment.length() - 5) || lastPathSegment.startsWith(".cmf", lastPathSegment.length() - 5)) {
+            return createFragmentedMp4Extractor(timestampAdjuster, format, muxedCaptionFormats);
+        }
+        return createTsExtractor(this.payloadReaderFactoryFlags, this.exposeCea608WhenMissingDeclarations, format, muxedCaptionFormats, timestampAdjuster);
+    }
+
+    private static TsExtractor createTsExtractor(int userProvidedPayloadReaderFactoryFlags, boolean exposeCea608WhenMissingDeclarations, Format format, List<Format> muxedCaptionFormats, TimestampAdjuster timestampAdjuster) {
+        int i = userProvidedPayloadReaderFactoryFlags | 16;
+        if (muxedCaptionFormats != null) {
+            i |= 32;
+        } else if (exposeCea608WhenMissingDeclarations) {
+            muxedCaptionFormats = Collections.singletonList(Format.createTextSampleFormat(null, "application/cea-608", 0, null));
+        } else {
+            muxedCaptionFormats = Collections.emptyList();
+        }
+        String str = format.codecs;
+        if (!TextUtils.isEmpty(str)) {
+            if (!MediaController.AUIDO_MIME_TYPE.equals(MimeTypes.getAudioMediaMimeType(str))) {
+                i |= 2;
+            }
+            if (!MediaController.VIDEO_MIME_TYPE.equals(MimeTypes.getVideoMediaMimeType(str))) {
+                i |= 4;
+            }
+        }
+        return new TsExtractor(2, timestampAdjuster, new DefaultTsPayloadReaderFactory(i, muxedCaptionFormats));
+    }
+
+    private static FragmentedMp4Extractor createFragmentedMp4Extractor(TimestampAdjuster timestampAdjuster, Format format, List<Format> muxedCaptionFormats) {
+        int i = isFmp4Variant(format) ? 4 : 0;
+        if (muxedCaptionFormats == null) {
+            muxedCaptionFormats = Collections.emptyList();
+        }
+        return new FragmentedMp4Extractor(i, timestampAdjuster, null, muxedCaptionFormats);
+    }
+
+    private static boolean isFmp4Variant(Format format) {
+        Metadata metadata = format.metadata;
+        if (metadata == null) {
+            return false;
+        }
+        for (int i = 0; i < metadata.length(); i++) {
+            if (metadata.get(i) instanceof HlsTrackMetadataEntry) {
+                return !((HlsTrackMetadataEntry) r2).variantInfos.isEmpty();
+            }
+        }
+        return false;
+    }
+
+    private static HlsExtractorFactory.Result buildResultForSameExtractorType(Extractor previousExtractor, Format format, TimestampAdjuster timestampAdjuster) {
+        if (previousExtractor instanceof WebvttExtractor) {
+            return buildResult(new WebvttExtractor(format.language, timestampAdjuster));
+        }
+        if (previousExtractor instanceof AdtsExtractor) {
+            return buildResult(new AdtsExtractor());
+        }
+        if (previousExtractor instanceof Ac3Extractor) {
+            return buildResult(new Ac3Extractor());
+        }
+        if (previousExtractor instanceof Ac4Extractor) {
+            return buildResult(new Ac4Extractor());
+        }
+        if (previousExtractor instanceof Mp3Extractor) {
+            return buildResult(new Mp3Extractor());
+        }
+        return null;
+    }
+
+    private static HlsExtractorFactory.Result buildResult(Extractor extractor) {
+        return new HlsExtractorFactory.Result(extractor, (extractor instanceof AdtsExtractor) || (extractor instanceof Ac3Extractor) || (extractor instanceof Ac4Extractor) || (extractor instanceof Mp3Extractor), isReusable(extractor));
+    }
+
+    private static boolean sniffQuietly(Extractor extractor, ExtractorInput input) throws InterruptedException, IOException {
+        try {
+            boolean zSniff = extractor.sniff(input);
+            input.resetPeekPosition();
+            return zSniff;
+        } catch (EOFException unused) {
+            input.resetPeekPosition();
+            return false;
+        } catch (Throwable th) {
+            input.resetPeekPosition();
+            throw th;
+        }
+    }
+
+    private static boolean isReusable(Extractor previousExtractor) {
+        return (previousExtractor instanceof TsExtractor) || (previousExtractor instanceof FragmentedMp4Extractor);
+    }
+}

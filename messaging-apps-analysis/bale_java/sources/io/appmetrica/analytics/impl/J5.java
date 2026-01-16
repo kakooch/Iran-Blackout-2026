@@ -1,0 +1,36 @@
+package io.appmetrica.analytics.impl;
+
+import io.appmetrica.analytics.coreapi.internal.executors.IHandlerExecutor;
+import io.appmetrica.analytics.coreapi.internal.servicecomponents.ActivationBarrierCallback;
+import io.appmetrica.analytics.coreutils.internal.services.WaitForActivationDelayBarrier;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/* loaded from: classes3.dex */
+public final class J5 implements Runnable {
+    public final List a;
+    public final IHandlerExecutor b = C2586ha.h().u().a();
+    public final WaitForActivationDelayBarrier c = C2586ha.h().a();
+
+    public J5(List list) {
+        this.a = list;
+    }
+
+    public static final void a(J5 j5) {
+        Iterator it = j5.a.iterator();
+        while (it.hasNext()) {
+            ((Runnable) it.next()).run();
+        }
+    }
+
+    @Override // java.lang.Runnable
+    public final void run() {
+        this.c.subscribe(TimeUnit.SECONDS.toMillis(10L), this.b, new ActivationBarrierCallback() { // from class: ir.nasim.og3
+            @Override // io.appmetrica.analytics.coreapi.internal.servicecomponents.ActivationBarrierCallback
+            public final void onWaitFinished() {
+                io.appmetrica.analytics.impl.J5.a(this.a);
+            }
+        });
+    }
+}

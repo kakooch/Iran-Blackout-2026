@@ -1,0 +1,8 @@
+package ir.nasim;
+
+/* renamed from: ir.nasim.vp, reason: case insensitive filesystem */
+/* loaded from: classes2.dex */
+public abstract /* synthetic */ class AbstractC22781vp {
+    public static /* synthetic */ void a() {
+    }
+}

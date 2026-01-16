@@ -1,0 +1,120 @@
+package ir.eitaa.ui.Cells;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.text.TextUtils;
+import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.FrameLayout;
+import android.widget.TextView;
+import ir.eitaa.messenger.AndroidUtilities;
+import ir.eitaa.messenger.Emoji;
+import ir.eitaa.messenger.LocaleController;
+import ir.eitaa.ui.ActionBar.Theme;
+import ir.eitaa.ui.Components.LayoutHelper;
+
+/* loaded from: classes3.dex */
+public class TextDetailCell extends FrameLayout {
+    private boolean contentDescriptionValueFirst;
+    private boolean needDivider;
+    private TextView textView;
+    private TextView valueTextView;
+
+    public TextDetailCell(Context context) {
+        super(context);
+        TextView textView = new TextView(context);
+        this.textView = textView;
+        textView.setTextColor(Theme.getColor("windowBackgroundWhiteBlackText"));
+        this.textView.setTextSize(1, 16.0f);
+        this.textView.setTypeface(AndroidUtilities.getFontFamily(false));
+        this.textView.setGravity(LocaleController.isRTL ? 5 : 3);
+        this.textView.setLines(1);
+        this.textView.setMaxLines(1);
+        this.textView.setSingleLine(true);
+        this.textView.setEllipsize(TextUtils.TruncateAt.END);
+        this.textView.setImportantForAccessibility(2);
+        addView(this.textView, LayoutHelper.createFrame(-2, -2.0f, LocaleController.isRTL ? 5 : 3, 23.0f, 8.0f, 23.0f, 0.0f));
+        TextView textView2 = new TextView(context);
+        this.valueTextView = textView2;
+        textView2.setTextColor(Theme.getColor("windowBackgroundWhiteGrayText2"));
+        this.valueTextView.setTextSize(1, 13.0f);
+        this.valueTextView.setTypeface(AndroidUtilities.getFontFamily(false));
+        this.valueTextView.setLines(1);
+        this.valueTextView.setMaxLines(1);
+        this.valueTextView.setSingleLine(true);
+        this.valueTextView.setGravity(LocaleController.isRTL ? 5 : 3);
+        this.valueTextView.setImportantForAccessibility(2);
+        this.valueTextView.setTag("valueTextView");
+        addView(this.valueTextView, LayoutHelper.createFrame(-2, -2.0f, LocaleController.isRTL ? 5 : 3, 23.0f, 33.0f, 23.0f, 0.0f));
+    }
+
+    @Override // android.widget.FrameLayout, android.view.View
+    protected void onMeasure(int i, int i2) {
+        super.onMeasure(View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.getSize(i), 1073741824), View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(60.0f) + (this.needDivider ? 1 : 0), 1073741824));
+    }
+
+    public void setTextAndValue(String text, String value, boolean divider) {
+        this.textView.setText(text);
+        this.valueTextView.setText(value);
+        enableValueTextView();
+        this.needDivider = divider;
+        setWillNotDraw(!divider);
+    }
+
+    public void setTextWithEmojiAndValue(String text, CharSequence value, boolean divider) {
+        TextView textView = this.textView;
+        textView.setText(Emoji.replaceEmoji(text, textView.getPaint().getFontMetricsInt(), AndroidUtilities.dp(14.0f), false));
+        this.valueTextView.setText(value);
+        enableValueTextView();
+        this.needDivider = divider;
+        setWillNotDraw(!divider);
+    }
+
+    public void setContentDescriptionValueFirst(boolean contentDescriptionValueFirst) {
+        this.contentDescriptionValueFirst = contentDescriptionValueFirst;
+    }
+
+    @Override // android.view.View
+    public void invalidate() {
+        super.invalidate();
+        this.textView.invalidate();
+    }
+
+    @Override // android.view.View
+    protected void onDraw(Canvas canvas) {
+        if (this.needDivider) {
+            canvas.drawLine(LocaleController.isRTL ? 0.0f : AndroidUtilities.dp(20.0f), getMeasuredHeight() - 1, getMeasuredWidth() - (LocaleController.isRTL ? AndroidUtilities.dp(20.0f) : 0), getMeasuredHeight() - 1, Theme.dividerPaint);
+        }
+    }
+
+    @Override // android.view.View
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+        super.onInitializeAccessibilityNodeInfo(info);
+        CharSequence text = this.textView.getText();
+        CharSequence text2 = this.valueTextView.getText();
+        if (TextUtils.isEmpty(text) || TextUtils.isEmpty(text2)) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append((Object) (this.contentDescriptionValueFirst ? text2 : text));
+        sb.append(": ");
+        if (!this.contentDescriptionValueFirst) {
+            text = text2;
+        }
+        sb.append((Object) text);
+        info.setText(sb.toString());
+    }
+
+    public void disableValueTextView() {
+        removeView(this.valueTextView);
+        this.textView.setGravity(16);
+        this.textView.setLayoutParams(LayoutHelper.createFrame(-2, -1.0f, LocaleController.isRTL ? 5 : 3, 23.0f, 0.0f, 23.0f, 0.0f));
+    }
+
+    public void enableValueTextView() {
+        if (((TextView) findViewWithTag("valueTextView")) == null) {
+            this.textView.setLayoutParams(LayoutHelper.createFrame(-2, -2.0f, LocaleController.isRTL ? 5 : 3, 23.0f, 8.0f, 23.0f, 0.0f));
+            addView(this.valueTextView, LayoutHelper.createFrame(-2, -2.0f, LocaleController.isRTL ? 5 : 3, 23.0f, 33.0f, 23.0f, 0.0f));
+        }
+    }
+}

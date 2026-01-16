@@ -1,0 +1,179 @@
+package ai.bale.proto;
+
+import com.google.protobuf.AbstractC2377a;
+import com.google.protobuf.AbstractC2383g;
+import com.google.protobuf.AbstractC2384h;
+import com.google.protobuf.C2394s;
+import com.google.protobuf.GeneratedMessageLite;
+import ir.nasim.KW4;
+import ir.nasim.U64;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+
+/* loaded from: classes.dex */
+public final class SapOuterClass$ResponseTransferMoneyByCard extends GeneratedMessageLite implements U64 {
+    private static final SapOuterClass$ResponseTransferMoneyByCard DEFAULT_INSTANCE;
+    private static volatile KW4 PARSER = null;
+    public static final int TRACE_NUMBER_FIELD_NUMBER = 1;
+    public static final int TRANSACTION_TIME_FIELD_NUMBER = 2;
+    private String traceNumber_ = "";
+    private String transactionTime_ = "";
+
+    public static final class a extends GeneratedMessageLite.b implements U64 {
+        private a() {
+            super(SapOuterClass$ResponseTransferMoneyByCard.DEFAULT_INSTANCE);
+        }
+    }
+
+    static {
+        SapOuterClass$ResponseTransferMoneyByCard sapOuterClass$ResponseTransferMoneyByCard = new SapOuterClass$ResponseTransferMoneyByCard();
+        DEFAULT_INSTANCE = sapOuterClass$ResponseTransferMoneyByCard;
+        GeneratedMessageLite.registerDefaultInstance(SapOuterClass$ResponseTransferMoneyByCard.class, sapOuterClass$ResponseTransferMoneyByCard);
+    }
+
+    private SapOuterClass$ResponseTransferMoneyByCard() {
+    }
+
+    private void clearTraceNumber() {
+        this.traceNumber_ = getDefaultInstance().getTraceNumber();
+    }
+
+    private void clearTransactionTime() {
+        this.transactionTime_ = getDefaultInstance().getTransactionTime();
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
+    public static a newBuilder() {
+        return (a) DEFAULT_INSTANCE.createBuilder();
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseDelimitedFrom(InputStream inputStream) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseDelimitedFrom(DEFAULT_INSTANCE, inputStream);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(ByteBuffer byteBuffer) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, byteBuffer);
+    }
+
+    public static KW4 parser() {
+        return DEFAULT_INSTANCE.getParserForType();
+    }
+
+    private void setTraceNumber(String str) {
+        str.getClass();
+        this.traceNumber_ = str;
+    }
+
+    private void setTraceNumberBytes(AbstractC2383g abstractC2383g) {
+        AbstractC2377a.checkByteStringIsUtf8(abstractC2383g);
+        this.traceNumber_ = abstractC2383g.f0();
+    }
+
+    private void setTransactionTime(String str) {
+        str.getClass();
+        this.transactionTime_ = str;
+    }
+
+    private void setTransactionTimeBytes(AbstractC2383g abstractC2383g) {
+        AbstractC2377a.checkByteStringIsUtf8(abstractC2383g);
+        this.transactionTime_ = abstractC2383g.f0();
+    }
+
+    @Override // com.google.protobuf.GeneratedMessageLite
+    protected final Object dynamicMethod(GeneratedMessageLite.g gVar, Object obj, Object obj2) {
+        switch (H1.a[gVar.ordinal()]) {
+            case 1:
+                return new SapOuterClass$ResponseTransferMoneyByCard();
+            case 2:
+                return new a();
+            case 3:
+                return GeneratedMessageLite.newMessageInfo(DEFAULT_INSTANCE, "\u0000\u0002\u0000\u0000\u0001\u0002\u0002\u0000\u0000\u0000\u0001Ȉ\u0002Ȉ", new Object[]{"traceNumber_", "transactionTime_"});
+            case 4:
+                return DEFAULT_INSTANCE;
+            case 5:
+                KW4 cVar = PARSER;
+                if (cVar == null) {
+                    synchronized (SapOuterClass$ResponseTransferMoneyByCard.class) {
+                        try {
+                            cVar = PARSER;
+                            if (cVar == null) {
+                                cVar = new GeneratedMessageLite.c(DEFAULT_INSTANCE);
+                                PARSER = cVar;
+                            }
+                        } finally {
+                        }
+                    }
+                }
+                return cVar;
+            case 6:
+                return (byte) 1;
+            case 7:
+                return null;
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+
+    public String getTraceNumber() {
+        return this.traceNumber_;
+    }
+
+    public AbstractC2383g getTraceNumberBytes() {
+        return AbstractC2383g.N(this.traceNumber_);
+    }
+
+    public String getTransactionTime() {
+        return this.transactionTime_;
+    }
+
+    public AbstractC2383g getTransactionTimeBytes() {
+        return AbstractC2383g.N(this.transactionTime_);
+    }
+
+    public static a newBuilder(SapOuterClass$ResponseTransferMoneyByCard sapOuterClass$ResponseTransferMoneyByCard) {
+        return (a) DEFAULT_INSTANCE.createBuilder(sapOuterClass$ResponseTransferMoneyByCard);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseDelimitedFrom(InputStream inputStream, C2394s c2394s) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseDelimitedFrom(DEFAULT_INSTANCE, inputStream, c2394s);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(ByteBuffer byteBuffer, C2394s c2394s) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, byteBuffer, c2394s);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(AbstractC2383g abstractC2383g) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, abstractC2383g);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(AbstractC2383g abstractC2383g, C2394s c2394s) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, abstractC2383g, c2394s);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(byte[] bArr) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, bArr);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(byte[] bArr, C2394s c2394s) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, bArr, c2394s);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(InputStream inputStream) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, inputStream);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(InputStream inputStream, C2394s c2394s) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, inputStream, c2394s);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(AbstractC2384h abstractC2384h) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, abstractC2384h);
+    }
+
+    public static SapOuterClass$ResponseTransferMoneyByCard parseFrom(AbstractC2384h abstractC2384h, C2394s c2394s) {
+        return (SapOuterClass$ResponseTransferMoneyByCard) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, abstractC2384h, c2394s);
+    }
+}

@@ -1,0 +1,22 @@
+package org.rbmain.tgnet;
+
+/* loaded from: classes4.dex */
+public class TLRPC$TL_messages_getCommonChats extends TLObject {
+    public static int constructor = 218777796;
+    public int limit;
+    public long max_id;
+    public TLRPC$InputUser user_id;
+
+    @Override // org.rbmain.tgnet.TLObject
+    public TLObject deserializeResponse(AbstractSerializedData abstractSerializedData, int i, boolean z) {
+        return TLRPC$messages_Chats.TLdeserialize(abstractSerializedData, i, z);
+    }
+
+    @Override // org.rbmain.tgnet.TLObject
+    public void serializeToStream(AbstractSerializedData abstractSerializedData) {
+        abstractSerializedData.writeInt32(constructor);
+        this.user_id.serializeToStream(abstractSerializedData);
+        abstractSerializedData.writeInt32((int) this.max_id);
+        abstractSerializedData.writeInt32(this.limit);
+    }
+}

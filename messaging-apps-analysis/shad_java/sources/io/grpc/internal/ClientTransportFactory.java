@@ -1,0 +1,76 @@
+package io.grpc.internal;
+
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import io.grpc.Attributes;
+import io.grpc.ChannelLogger;
+import io.grpc.HttpConnectProxiedSocketAddress;
+import java.io.Closeable;
+import java.net.SocketAddress;
+import java.util.concurrent.ScheduledExecutorService;
+
+/* loaded from: classes3.dex */
+public interface ClientTransportFactory extends Closeable {
+    @Override // java.io.Closeable, java.lang.AutoCloseable
+    void close();
+
+    ScheduledExecutorService getScheduledExecutorService();
+
+    ConnectionClientTransport newClientTransport(SocketAddress socketAddress, ClientTransportOptions clientTransportOptions, ChannelLogger channelLogger);
+
+    public static final class ClientTransportOptions {
+        private HttpConnectProxiedSocketAddress connectProxiedSocketAddr;
+        private String userAgent;
+        private String authority = "unknown-authority";
+        private Attributes eagAttributes = Attributes.EMPTY;
+
+        public String getAuthority() {
+            return this.authority;
+        }
+
+        public ClientTransportOptions setAuthority(String str) {
+            this.authority = (String) Preconditions.checkNotNull(str, "authority");
+            return this;
+        }
+
+        public Attributes getEagAttributes() {
+            return this.eagAttributes;
+        }
+
+        public ClientTransportOptions setEagAttributes(Attributes attributes) {
+            Preconditions.checkNotNull(attributes, "eagAttributes");
+            this.eagAttributes = attributes;
+            return this;
+        }
+
+        public String getUserAgent() {
+            return this.userAgent;
+        }
+
+        public ClientTransportOptions setUserAgent(String str) {
+            this.userAgent = str;
+            return this;
+        }
+
+        public HttpConnectProxiedSocketAddress getHttpConnectProxiedSocketAddress() {
+            return this.connectProxiedSocketAddr;
+        }
+
+        public ClientTransportOptions setHttpConnectProxiedSocketAddress(HttpConnectProxiedSocketAddress httpConnectProxiedSocketAddress) {
+            this.connectProxiedSocketAddr = httpConnectProxiedSocketAddress;
+            return this;
+        }
+
+        public int hashCode() {
+            return Objects.hashCode(this.authority, this.eagAttributes, this.userAgent, this.connectProxiedSocketAddr);
+        }
+
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ClientTransportOptions)) {
+                return false;
+            }
+            ClientTransportOptions clientTransportOptions = (ClientTransportOptions) obj;
+            return this.authority.equals(clientTransportOptions.authority) && this.eagAttributes.equals(clientTransportOptions.eagAttributes) && Objects.equal(this.userAgent, clientTransportOptions.userAgent) && Objects.equal(this.connectProxiedSocketAddr, clientTransportOptions.connectProxiedSocketAddr);
+        }
+    }
+}

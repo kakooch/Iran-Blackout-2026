@@ -1,0 +1,90 @@
+package org.bouncycastle.asn1.nist;
+
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+
+/* loaded from: classes4.dex */
+public interface NISTObjectIdentifiers {
+    public static final ASN1ObjectIdentifier aes;
+    public static final ASN1ObjectIdentifier hashAlgs;
+    public static final ASN1ObjectIdentifier id_sha224;
+    public static final ASN1ObjectIdentifier id_sha256;
+    public static final ASN1ObjectIdentifier id_sha384;
+    public static final ASN1ObjectIdentifier id_sha3_256;
+    public static final ASN1ObjectIdentifier id_sha512;
+    public static final ASN1ObjectIdentifier id_sha512_256;
+    public static final ASN1ObjectIdentifier id_shake128;
+    public static final ASN1ObjectIdentifier id_shake256;
+    public static final ASN1ObjectIdentifier nistAlgorithm;
+    public static final ASN1ObjectIdentifier sigAlgs;
+
+    static {
+        ASN1ObjectIdentifier aSN1ObjectIdentifier = new ASN1ObjectIdentifier("2.16.840.1.101.3.4");
+        nistAlgorithm = aSN1ObjectIdentifier;
+        ASN1ObjectIdentifier aSN1ObjectIdentifierBranch = aSN1ObjectIdentifier.branch("2");
+        hashAlgs = aSN1ObjectIdentifierBranch;
+        id_sha256 = aSN1ObjectIdentifierBranch.branch("1");
+        id_sha384 = aSN1ObjectIdentifierBranch.branch("2");
+        id_sha512 = aSN1ObjectIdentifierBranch.branch("3");
+        id_sha224 = aSN1ObjectIdentifierBranch.branch("4");
+        aSN1ObjectIdentifierBranch.branch("5");
+        id_sha512_256 = aSN1ObjectIdentifierBranch.branch("6");
+        aSN1ObjectIdentifierBranch.branch("7");
+        id_sha3_256 = aSN1ObjectIdentifierBranch.branch("8");
+        aSN1ObjectIdentifierBranch.branch("9");
+        aSN1ObjectIdentifierBranch.branch("10");
+        id_shake128 = aSN1ObjectIdentifierBranch.branch("11");
+        id_shake256 = aSN1ObjectIdentifierBranch.branch("12");
+        aSN1ObjectIdentifierBranch.branch("13");
+        aSN1ObjectIdentifierBranch.branch("14");
+        aSN1ObjectIdentifierBranch.branch("15");
+        aSN1ObjectIdentifierBranch.branch("16");
+        aSN1ObjectIdentifierBranch.branch("17");
+        aSN1ObjectIdentifierBranch.branch("18");
+        aSN1ObjectIdentifierBranch.branch("19");
+        aSN1ObjectIdentifierBranch.branch("20");
+        ASN1ObjectIdentifier aSN1ObjectIdentifierBranch2 = aSN1ObjectIdentifier.branch("1");
+        aes = aSN1ObjectIdentifierBranch2;
+        aSN1ObjectIdentifierBranch2.branch("1");
+        aSN1ObjectIdentifierBranch2.branch("2");
+        aSN1ObjectIdentifierBranch2.branch("3");
+        aSN1ObjectIdentifierBranch2.branch("4");
+        aSN1ObjectIdentifierBranch2.branch("5");
+        aSN1ObjectIdentifierBranch2.branch("6");
+        aSN1ObjectIdentifierBranch2.branch("7");
+        aSN1ObjectIdentifierBranch2.branch("8");
+        aSN1ObjectIdentifierBranch2.branch("21");
+        aSN1ObjectIdentifierBranch2.branch("22");
+        aSN1ObjectIdentifierBranch2.branch("23");
+        aSN1ObjectIdentifierBranch2.branch("24");
+        aSN1ObjectIdentifierBranch2.branch("25");
+        aSN1ObjectIdentifierBranch2.branch("26");
+        aSN1ObjectIdentifierBranch2.branch("27");
+        aSN1ObjectIdentifierBranch2.branch("28");
+        aSN1ObjectIdentifierBranch2.branch("41");
+        aSN1ObjectIdentifierBranch2.branch("42");
+        aSN1ObjectIdentifierBranch2.branch("43");
+        aSN1ObjectIdentifierBranch2.branch("44");
+        aSN1ObjectIdentifierBranch2.branch("45");
+        aSN1ObjectIdentifierBranch2.branch("46");
+        aSN1ObjectIdentifierBranch2.branch("47");
+        aSN1ObjectIdentifierBranch2.branch("48");
+        ASN1ObjectIdentifier aSN1ObjectIdentifierBranch3 = aSN1ObjectIdentifier.branch("3");
+        sigAlgs = aSN1ObjectIdentifierBranch3;
+        aSN1ObjectIdentifierBranch3.branch("1");
+        aSN1ObjectIdentifierBranch3.branch("2");
+        aSN1ObjectIdentifierBranch3.branch("3");
+        aSN1ObjectIdentifierBranch3.branch("4");
+        aSN1ObjectIdentifierBranch3.branch("5");
+        aSN1ObjectIdentifierBranch3.branch("6");
+        aSN1ObjectIdentifierBranch3.branch("7");
+        aSN1ObjectIdentifierBranch3.branch("8");
+        aSN1ObjectIdentifierBranch3.branch("9");
+        aSN1ObjectIdentifierBranch3.branch("10");
+        aSN1ObjectIdentifierBranch3.branch("11");
+        aSN1ObjectIdentifierBranch3.branch("12");
+        aSN1ObjectIdentifierBranch3.branch("13");
+        aSN1ObjectIdentifierBranch3.branch("14");
+        aSN1ObjectIdentifierBranch3.branch("15");
+        aSN1ObjectIdentifierBranch3.branch("16");
+    }
+}

@@ -1,0 +1,11 @@
+package ir.eitaa.tgnet;
+
+/* loaded from: classes.dex */
+public class TLRPC$TL_sendMessageRecordAudioAction extends TLRPC$SendMessageAction {
+    public static int constructor = -718310409;
+
+    @Override // ir.eitaa.tgnet.TLObject
+    public void serializeToStream(AbstractSerializedData stream) {
+        stream.writeInt32(constructor);
+    }
+}

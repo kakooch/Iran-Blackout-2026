@@ -1,0 +1,17 @@
+package org.rbmain.ui.Components;
+
+/* loaded from: classes5.dex */
+public class Point {
+    public int parentHeight;
+    public int parentWidth;
+    public float x;
+    public float y;
+
+    public Point() {
+    }
+
+    public Point(float f, float f2) {
+        this.x = f;
+        this.y = f2;
+    }
+}

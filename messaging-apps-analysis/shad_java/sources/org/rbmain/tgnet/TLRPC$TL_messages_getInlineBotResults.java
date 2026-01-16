@@ -1,0 +1,30 @@
+package org.rbmain.tgnet;
+
+/* loaded from: classes4.dex */
+public class TLRPC$TL_messages_getInlineBotResults extends TLObject {
+    public static int constructor = 1364105629;
+    public TLRPC$InputUser bot;
+    public int flags;
+    public TLRPC$InputGeoPoint geo_point;
+    public String offset;
+    public TLRPC$InputPeer peer;
+    public String query;
+
+    @Override // org.rbmain.tgnet.TLObject
+    public TLObject deserializeResponse(AbstractSerializedData abstractSerializedData, int i, boolean z) {
+        return TLRPC$messages_BotResults.TLdeserialize(abstractSerializedData, i, z);
+    }
+
+    @Override // org.rbmain.tgnet.TLObject
+    public void serializeToStream(AbstractSerializedData abstractSerializedData) {
+        abstractSerializedData.writeInt32(constructor);
+        abstractSerializedData.writeInt32(this.flags);
+        this.bot.serializeToStream(abstractSerializedData);
+        this.peer.serializeToStream(abstractSerializedData);
+        if ((this.flags & 1) != 0) {
+            this.geo_point.serializeToStream(abstractSerializedData);
+        }
+        abstractSerializedData.writeString(this.query);
+        abstractSerializedData.writeString(this.offset);
+    }
+}

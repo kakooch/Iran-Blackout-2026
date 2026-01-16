@@ -1,0 +1,52 @@
+package ir.eitaa.ui.Cells;
+
+import android.content.Context;
+import android.graphics.Paint;
+import android.view.View;
+import android.widget.FrameLayout;
+import ir.eitaa.messenger.AndroidUtilities;
+import ir.eitaa.ui.ActionBar.Theme;
+import ir.eitaa.ui.Components.LayoutHelper;
+import ir.eitaa.ui.Components.RadialProgressView;
+
+/* loaded from: classes3.dex */
+public class ChatLoadingCell extends FrameLayout {
+    private FrameLayout frameLayout;
+    private RadialProgressView progressBar;
+    private Theme.ResourcesProvider resourcesProvider;
+
+    public ChatLoadingCell(Context context, View parent, Theme.ResourcesProvider resourcesProvider) {
+        super(context);
+        this.resourcesProvider = resourcesProvider;
+        FrameLayout frameLayout = new FrameLayout(context);
+        this.frameLayout = frameLayout;
+        frameLayout.setBackground(Theme.createServiceDrawable(AndroidUtilities.dp(18.0f), this.frameLayout, parent, getThemedPaint("paintChatActionBackground")));
+        addView(this.frameLayout, LayoutHelper.createFrame(36, 36, 17));
+        RadialProgressView radialProgressView = new RadialProgressView(context, resourcesProvider);
+        this.progressBar = radialProgressView;
+        radialProgressView.setSize(AndroidUtilities.dp(28.0f));
+        this.progressBar.setProgressColor(getThemedColor("chat_serviceText"));
+        this.frameLayout.addView(this.progressBar, LayoutHelper.createFrame(32, 32, 17));
+    }
+
+    @Override // android.widget.FrameLayout, android.view.View
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(View.MeasureSpec.makeMeasureSpec(View.MeasureSpec.getSize(widthMeasureSpec), 1073741824), View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(44.0f), 1073741824));
+    }
+
+    public void setProgressVisible(boolean value) {
+        this.frameLayout.setVisibility(value ? 0 : 4);
+    }
+
+    private int getThemedColor(String key) {
+        Theme.ResourcesProvider resourcesProvider = this.resourcesProvider;
+        Integer color = resourcesProvider != null ? resourcesProvider.getColor(key) : null;
+        return color != null ? color.intValue() : Theme.getColor(key);
+    }
+
+    private Paint getThemedPaint(String paintKey) {
+        Theme.ResourcesProvider resourcesProvider = this.resourcesProvider;
+        Paint paint = resourcesProvider != null ? resourcesProvider.getPaint(paintKey) : null;
+        return paint != null ? paint : Theme.getThemePaint(paintKey);
+    }
+}

@@ -1,0 +1,15 @@
+package com.fasterxml.jackson.databind.util;
+
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+
+/* loaded from: classes.dex */
+public interface Converter<IN, OUT> {
+
+    public static abstract class None implements Converter<Object, Object> {
+    }
+
+    OUT convert(IN in);
+
+    JavaType getOutputType(TypeFactory typeFactory);
+}

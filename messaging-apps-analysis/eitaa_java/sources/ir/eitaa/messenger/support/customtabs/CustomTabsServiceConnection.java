@@ -1,0 +1,17 @@
+package ir.eitaa.messenger.support.customtabs;
+
+import android.content.ComponentName;
+import android.content.ServiceConnection;
+import android.os.IBinder;
+import ir.eitaa.messenger.support.customtabs.ICustomTabsService;
+
+/* loaded from: classes.dex */
+public abstract class CustomTabsServiceConnection implements ServiceConnection {
+    public abstract void onCustomTabsServiceConnected(ComponentName name, CustomTabsClient client);
+
+    @Override // android.content.ServiceConnection
+    public final void onServiceConnected(ComponentName name, IBinder service) {
+        onCustomTabsServiceConnected(name, new CustomTabsClient(ICustomTabsService.Stub.asInterface(service), name) { // from class: ir.eitaa.messenger.support.customtabs.CustomTabsServiceConnection.1
+        });
+    }
+}

@@ -1,0 +1,125 @@
+package androidx.core.os;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Locale;
+
+/* loaded from: classes.dex */
+final class LocaleListCompatWrapper implements LocaleListInterface {
+    private static final Locale[] sEmptyList = new Locale[0];
+    private final Locale[] mList;
+
+    @Override // androidx.core.os.LocaleListInterface
+    public Object getLocaleList() {
+        return null;
+    }
+
+    static {
+        new Locale("en", "XA");
+        new Locale("ar", "XB");
+        LocaleListCompat.forLanguageTagCompat("en-Latn");
+    }
+
+    @Override // androidx.core.os.LocaleListInterface
+    public Locale get(int i) {
+        if (i >= 0) {
+            Locale[] localeArr = this.mList;
+            if (i < localeArr.length) {
+                return localeArr[i];
+            }
+        }
+        return null;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof LocaleListCompatWrapper)) {
+            return false;
+        }
+        Locale[] localeArr = ((LocaleListCompatWrapper) obj).mList;
+        if (this.mList.length != localeArr.length) {
+            return false;
+        }
+        int i = 0;
+        while (true) {
+            Locale[] localeArr2 = this.mList;
+            if (i >= localeArr2.length) {
+                return true;
+            }
+            if (!localeArr2[i].equals(localeArr[i])) {
+                return false;
+            }
+            i++;
+        }
+    }
+
+    public int hashCode() {
+        int iHashCode = 1;
+        int i = 0;
+        while (true) {
+            Locale[] localeArr = this.mList;
+            if (i >= localeArr.length) {
+                return iHashCode;
+            }
+            iHashCode = (iHashCode * 31) + localeArr[i].hashCode();
+            i++;
+        }
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        int i = 0;
+        while (true) {
+            Locale[] localeArr = this.mList;
+            if (i < localeArr.length) {
+                sb.append(localeArr[i]);
+                if (i < this.mList.length - 1) {
+                    sb.append(',');
+                }
+                i++;
+            } else {
+                sb.append("]");
+                return sb.toString();
+            }
+        }
+    }
+
+    LocaleListCompatWrapper(Locale... localeArr) {
+        if (localeArr.length == 0) {
+            this.mList = sEmptyList;
+            return;
+        }
+        ArrayList arrayList = new ArrayList();
+        HashSet hashSet = new HashSet();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < localeArr.length; i++) {
+            Locale locale = localeArr[i];
+            if (locale == null) {
+                throw new NullPointerException("list[" + i + "] is null");
+            }
+            if (!hashSet.contains(locale)) {
+                Locale locale2 = (Locale) locale.clone();
+                arrayList.add(locale2);
+                toLanguageTag(sb, locale2);
+                if (i < localeArr.length - 1) {
+                    sb.append(',');
+                }
+                hashSet.add(locale2);
+            }
+        }
+        this.mList = (Locale[]) arrayList.toArray(new Locale[arrayList.size()]);
+    }
+
+    static void toLanguageTag(StringBuilder sb, Locale locale) {
+        sb.append(locale.getLanguage());
+        String country = locale.getCountry();
+        if (country == null || country.isEmpty()) {
+            return;
+        }
+        sb.append('-');
+        sb.append(locale.getCountry());
+    }
+}

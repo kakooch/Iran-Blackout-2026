@@ -1,0 +1,31 @@
+package ir.eitaa.ui.Components;
+
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.text.style.ReplacementSpan;
+import ir.eitaa.messenger.AndroidUtilities;
+
+/* loaded from: classes3.dex */
+public class DotDividerSpan extends ReplacementSpan {
+    int color;
+    Paint p = new Paint(1);
+    int topPadding;
+
+    @Override // android.text.style.ReplacementSpan
+    public int getSize(Paint paint, CharSequence charSequence, int i, int i1, Paint.FontMetricsInt fontMetricsInt) {
+        return AndroidUtilities.dp(3.0f);
+    }
+
+    @Override // android.text.style.ReplacementSpan
+    public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
+        if (this.color != paint.getColor()) {
+            this.p.setColor(paint.getColor());
+        }
+        float fDpf2 = AndroidUtilities.dpf2(3.0f) / 2.0f;
+        canvas.drawCircle(x + fDpf2, ((bottom - top) / 2) + this.topPadding, fDpf2, this.p);
+    }
+
+    public void setTopPadding(int topPadding) {
+        this.topPadding = topPadding;
+    }
+}

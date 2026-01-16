@@ -1,0 +1,11 @@
+package io.appmetrica.analytics.impl;
+
+/* loaded from: classes3.dex */
+public abstract /* synthetic */ class F7 {
+    public static /* synthetic */ int a(int i) {
+        if (i != 0) {
+            return i - 1;
+        }
+        throw null;
+    }
+}

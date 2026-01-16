@@ -1,0 +1,6 @@
+package ir.nasim;
+
+/* renamed from: ir.nasim.zr8, reason: case insensitive filesystem */
+/* loaded from: classes3.dex */
+public interface InterfaceC25180zr8 {
+}

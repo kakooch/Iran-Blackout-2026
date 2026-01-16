@@ -1,0 +1,84 @@
+package kotlinx.coroutines.internal;
+
+import java.util.concurrent.CancellationException;
+import kotlin.Result;
+import kotlin.ResultKt;
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
+import kotlin.coroutines.CoroutineContext;
+import kotlin.jvm.functions.Function1;
+import kotlinx.coroutines.CompletionStateKt;
+import kotlinx.coroutines.DebugKt;
+import kotlinx.coroutines.EventLoop;
+import kotlinx.coroutines.Job;
+import kotlinx.coroutines.ThreadLocalEventLoop;
+
+/* compiled from: DispatchedContinuation.kt */
+/* loaded from: classes4.dex */
+public final class DispatchedContinuationKt {
+    private static final Symbol UNDEFINED = new Symbol("UNDEFINED");
+    public static final Symbol REUSABLE_CLAIMED = new Symbol("REUSABLE_CLAIMED");
+
+    public static /* synthetic */ void resumeCancellableWith$default(Continuation continuation, Object obj, Function1 function1, int i, Object obj2) {
+        if ((i & 2) != 0) {
+            function1 = null;
+        }
+        resumeCancellableWith(continuation, obj, function1);
+    }
+
+    public static final <T> void resumeCancellableWith(Continuation<? super T> continuation, Object obj, Function1<? super Throwable, Unit> function1) {
+        boolean z;
+        if (continuation instanceof DispatchedContinuation) {
+            DispatchedContinuation dispatchedContinuation = (DispatchedContinuation) continuation;
+            Object state = CompletionStateKt.toState(obj, function1);
+            if (dispatchedContinuation.dispatcher.isDispatchNeeded(dispatchedContinuation.getContext())) {
+                dispatchedContinuation._state = state;
+                dispatchedContinuation.resumeMode = 1;
+                dispatchedContinuation.dispatcher.mo562dispatch(dispatchedContinuation.getContext(), dispatchedContinuation);
+                return;
+            }
+            DebugKt.getASSERTIONS_ENABLED();
+            EventLoop eventLoop$kotlinx_coroutines_core = ThreadLocalEventLoop.INSTANCE.getEventLoop$kotlinx_coroutines_core();
+            if (!eventLoop$kotlinx_coroutines_core.isUnconfinedLoopActive()) {
+                eventLoop$kotlinx_coroutines_core.incrementUseCount(true);
+                try {
+                    Job job = (Job) dispatchedContinuation.getContext().get(Job.Key);
+                    if (job == null || job.isActive()) {
+                        z = false;
+                    } else {
+                        CancellationException cancellationException = job.getCancellationException();
+                        dispatchedContinuation.cancelCompletedResult$kotlinx_coroutines_core(state, cancellationException);
+                        Result.Companion companion = Result.Companion;
+                        dispatchedContinuation.resumeWith(Result.m542constructorimpl(ResultKt.createFailure(cancellationException)));
+                        z = true;
+                    }
+                    if (!z) {
+                        CoroutineContext context = dispatchedContinuation.getContext();
+                        Object objUpdateThreadContext = ThreadContextKt.updateThreadContext(context, dispatchedContinuation.countOrElement);
+                        try {
+                            dispatchedContinuation.continuation.resumeWith(obj);
+                            Unit unit = Unit.INSTANCE;
+                            ThreadContextKt.restoreThreadContext(context, objUpdateThreadContext);
+                        } catch (Throwable th) {
+                            ThreadContextKt.restoreThreadContext(context, objUpdateThreadContext);
+                            throw th;
+                        }
+                    }
+                    while (eventLoop$kotlinx_coroutines_core.processUnconfinedEvent()) {
+                    }
+                } finally {
+                    try {
+                        return;
+                    } finally {
+                    }
+                }
+                return;
+            }
+            dispatchedContinuation._state = state;
+            dispatchedContinuation.resumeMode = 1;
+            eventLoop$kotlinx_coroutines_core.dispatchUnconfined(dispatchedContinuation);
+            return;
+        }
+        continuation.resumeWith(obj);
+    }
+}

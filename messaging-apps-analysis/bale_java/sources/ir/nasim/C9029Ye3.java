@@ -1,0 +1,27 @@
+package ir.nasim;
+
+import android.view.View;
+import com.google.android.material.button.MaterialButton;
+
+/* renamed from: ir.nasim.Ye3, reason: case insensitive filesystem */
+/* loaded from: classes5.dex */
+public final class C9029Ye3 implements InterfaceC9764aW7 {
+    private final MaterialButton a;
+
+    private C9029Ye3(MaterialButton materialButton) {
+        this.a = materialButton;
+    }
+
+    public static C9029Ye3 a(View view) {
+        if (view != null) {
+            return new C9029Ye3((MaterialButton) view);
+        }
+        throw new NullPointerException("rootView");
+    }
+
+    @Override // ir.nasim.InterfaceC9764aW7
+    /* renamed from: b, reason: merged with bridge method [inline-methods] */
+    public MaterialButton getRoot() {
+        return this.a;
+    }
+}

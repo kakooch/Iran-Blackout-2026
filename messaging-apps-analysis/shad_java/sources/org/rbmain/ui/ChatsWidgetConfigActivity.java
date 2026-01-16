@@ -1,0 +1,62 @@
+package org.rbmain.ui;
+
+import android.content.Intent;
+import android.os.Bundle;
+import java.util.ArrayList;
+import org.rbmain.messenger.AndroidUtilities;
+import org.rbmain.ui.EditWidgetActivity;
+
+/* loaded from: classes4.dex */
+public class ChatsWidgetConfigActivity extends ExternalActionActivity {
+    private int creatingAppWidgetId = 0;
+
+    @Override // org.rbmain.ui.ExternalActionActivity
+    protected boolean handleIntent(Intent intent, boolean z, boolean z2, boolean z3, int i, int i2) {
+        if (!checkPasscode(intent, z, z2, z3, i, i2)) {
+            return false;
+        }
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            this.creatingAppWidgetId = extras.getInt("appWidgetId", 0);
+        }
+        if (this.creatingAppWidgetId != 0) {
+            Bundle bundle = new Bundle();
+            bundle.putBoolean("onlySelect", true);
+            bundle.putInt("dialogsType", 10);
+            bundle.putBoolean("allowSwitchAccount", true);
+            EditWidgetActivity editWidgetActivity = new EditWidgetActivity(0, this.creatingAppWidgetId, false);
+            editWidgetActivity.setDelegate(new EditWidgetActivity.EditWidgetActivityDelegate() { // from class: org.rbmain.ui.ChatsWidgetConfigActivity$$ExternalSyntheticLambda0
+                @Override // org.rbmain.ui.EditWidgetActivity.EditWidgetActivityDelegate
+                public final void didSelectDialogs(ArrayList arrayList) {
+                    this.f$0.lambda$handleIntent$0(arrayList);
+                }
+            });
+            if (AndroidUtilities.isTablet()) {
+                if (this.layersActionBarLayout.fragmentsStack.isEmpty()) {
+                    this.layersActionBarLayout.addFragmentToStack(editWidgetActivity);
+                }
+            } else if (this.actionBarLayout.fragmentsStack.isEmpty()) {
+                this.actionBarLayout.addFragmentToStack(editWidgetActivity);
+            }
+            if (!AndroidUtilities.isTablet()) {
+                this.backgroundTablet.setVisibility(8);
+            }
+            this.actionBarLayout.showLastFragment();
+            if (AndroidUtilities.isTablet()) {
+                this.layersActionBarLayout.showLastFragment();
+            }
+            intent.setAction(null);
+        } else {
+            finish();
+        }
+        return true;
+    }
+
+    /* JADX INFO: Access modifiers changed from: private */
+    public /* synthetic */ void lambda$handleIntent$0(ArrayList arrayList) {
+        Intent intent = new Intent();
+        intent.putExtra("appWidgetId", this.creatingAppWidgetId);
+        setResult(-1, intent);
+        finish();
+    }
+}

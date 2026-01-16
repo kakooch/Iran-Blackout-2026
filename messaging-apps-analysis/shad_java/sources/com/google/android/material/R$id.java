@@ -1,0 +1,51 @@
+package com.google.android.material;
+
+/* loaded from: classes3.dex */
+public final class R$id {
+    public static final int cancel_button = 2131361969;
+    public static final int circle_center = 2131361994;
+    public static final int confirm_button = 2131362016;
+    public static final int coordinator = 2131362038;
+    public static final int design_bottom_sheet = 2131362070;
+    public static final int design_menu_item_action_area_stub = 2131362072;
+    public static final int design_menu_item_text = 2131362073;
+    public static final int material_clock_display = 2131362500;
+    public static final int material_clock_face = 2131362501;
+    public static final int material_clock_hand = 2131362502;
+    public static final int material_clock_period_pm_button = 2131362504;
+    public static final int material_clock_period_toggle = 2131362505;
+    public static final int material_hour_tv = 2131362507;
+    public static final int material_label = 2131362508;
+    public static final int material_minute_tv = 2131362510;
+    public static final int material_value_index = 2131362518;
+    public static final int month_grid = 2131362542;
+    public static final int month_navigation_fragment_toggle = 2131362544;
+    public static final int month_navigation_next = 2131362545;
+    public static final int month_navigation_previous = 2131362546;
+    public static final int month_title = 2131362547;
+    public static final int mtrl_anchor_parent = 2131362549;
+    public static final int mtrl_calendar_day_selector_frame = 2131362550;
+    public static final int mtrl_calendar_days_of_week = 2131362551;
+    public static final int mtrl_calendar_frame = 2131362552;
+    public static final int mtrl_calendar_main_pane = 2131362553;
+    public static final int mtrl_calendar_months = 2131362554;
+    public static final int mtrl_calendar_year_selector_frame = 2131362557;
+    public static final int mtrl_child_content_container = 2131362559;
+    public static final int mtrl_internal_children_alpha_tag = 2131362560;
+    public static final int mtrl_picker_header_selection_text = 2131362564;
+    public static final int mtrl_picker_header_toggle = 2131362566;
+    public static final int mtrl_picker_title_text = 2131362570;
+    public static final int row_index_key = 2131362731;
+    public static final int selection_type = 2131362767;
+    public static final int snackbar_action = 2131362810;
+    public static final int snackbar_text = 2131362811;
+    public static final int text_input_error_icon = 2131363026;
+    public static final int textinput_counter = 2131363029;
+    public static final int textinput_error = 2131363030;
+    public static final int textinput_helper_text = 2131363031;
+    public static final int textinput_placeholder = 2131363032;
+    public static final int textinput_prefix_text = 2131363033;
+    public static final int textinput_suffix_text = 2131363034;
+    public static final int touch_outside = 2131363062;
+    public static final int view_offset_helper = 2131363137;
+}

@@ -1,0 +1,38 @@
+package com.google.android.gms.auth.api.signin;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+import com.google.android.gms.common.internal.safeparcel.SafeParcelReader;
+import io.github.inflationx.calligraphy3.BuildConfig;
+
+/* compiled from: com.google.android.gms:play-services-auth@@19.0.0 */
+/* loaded from: classes.dex */
+public final class zzd implements Parcelable.Creator<SignInAccount> {
+    @Override // android.os.Parcelable.Creator
+    public final /* synthetic */ SignInAccount[] newArray(int i) {
+        return new SignInAccount[i];
+    }
+
+    @Override // android.os.Parcelable.Creator
+    public final /* synthetic */ SignInAccount createFromParcel(Parcel parcel) {
+        int iValidateObjectHeader = SafeParcelReader.validateObjectHeader(parcel);
+        String strCreateString = BuildConfig.FLAVOR;
+        GoogleSignInAccount googleSignInAccount = null;
+        String strCreateString2 = BuildConfig.FLAVOR;
+        while (parcel.dataPosition() < iValidateObjectHeader) {
+            int header = SafeParcelReader.readHeader(parcel);
+            int fieldId = SafeParcelReader.getFieldId(header);
+            if (fieldId == 4) {
+                strCreateString = SafeParcelReader.createString(parcel, header);
+            } else if (fieldId == 7) {
+                googleSignInAccount = (GoogleSignInAccount) SafeParcelReader.createParcelable(parcel, header, GoogleSignInAccount.CREATOR);
+            } else if (fieldId == 8) {
+                strCreateString2 = SafeParcelReader.createString(parcel, header);
+            } else {
+                SafeParcelReader.skipUnknownField(parcel, header);
+            }
+        }
+        SafeParcelReader.ensureAtEnd(parcel, iValidateObjectHeader);
+        return new SignInAccount(strCreateString, googleSignInAccount, strCreateString2);
+    }
+}

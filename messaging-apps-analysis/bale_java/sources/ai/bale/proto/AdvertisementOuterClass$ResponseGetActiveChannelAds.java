@@ -1,0 +1,196 @@
+package ai.bale.proto;
+
+import com.google.protobuf.AbstractC2377a;
+import com.google.protobuf.AbstractC2383g;
+import com.google.protobuf.AbstractC2384h;
+import com.google.protobuf.B;
+import com.google.protobuf.C2394s;
+import com.google.protobuf.GeneratedMessageLite;
+import ir.nasim.InterfaceC3528Bg;
+import ir.nasim.KW4;
+import ir.nasim.U64;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.List;
+
+/* loaded from: classes8.dex */
+public final class AdvertisementOuterClass$ResponseGetActiveChannelAds extends GeneratedMessageLite implements U64 {
+    public static final int ADS_FIELD_NUMBER = 1;
+    private static final AdvertisementOuterClass$ResponseGetActiveChannelAds DEFAULT_INSTANCE;
+    private static volatile KW4 PARSER;
+    private B.j ads_ = GeneratedMessageLite.emptyProtobufList();
+
+    public static final class a extends GeneratedMessageLite.b implements U64 {
+        private a() {
+            super(AdvertisementOuterClass$ResponseGetActiveChannelAds.DEFAULT_INSTANCE);
+        }
+    }
+
+    static {
+        AdvertisementOuterClass$ResponseGetActiveChannelAds advertisementOuterClass$ResponseGetActiveChannelAds = new AdvertisementOuterClass$ResponseGetActiveChannelAds();
+        DEFAULT_INSTANCE = advertisementOuterClass$ResponseGetActiveChannelAds;
+        GeneratedMessageLite.registerDefaultInstance(AdvertisementOuterClass$ResponseGetActiveChannelAds.class, advertisementOuterClass$ResponseGetActiveChannelAds);
+    }
+
+    private AdvertisementOuterClass$ResponseGetActiveChannelAds() {
+    }
+
+    private void addAds(AdvertisementStruct$ChannelAdOrder advertisementStruct$ChannelAdOrder) {
+        advertisementStruct$ChannelAdOrder.getClass();
+        ensureAdsIsMutable();
+        this.ads_.add(advertisementStruct$ChannelAdOrder);
+    }
+
+    private void addAllAds(Iterable<? extends AdvertisementStruct$ChannelAdOrder> iterable) {
+        ensureAdsIsMutable();
+        AbstractC2377a.addAll((Iterable) iterable, (List) this.ads_);
+    }
+
+    private void clearAds() {
+        this.ads_ = GeneratedMessageLite.emptyProtobufList();
+    }
+
+    private void ensureAdsIsMutable() {
+        B.j jVar = this.ads_;
+        if (jVar.u()) {
+            return;
+        }
+        this.ads_ = GeneratedMessageLite.mutableCopy(jVar);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+    }
+
+    public static a newBuilder() {
+        return (a) DEFAULT_INSTANCE.createBuilder();
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseDelimitedFrom(InputStream inputStream) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseDelimitedFrom(DEFAULT_INSTANCE, inputStream);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(ByteBuffer byteBuffer) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, byteBuffer);
+    }
+
+    public static KW4 parser() {
+        return DEFAULT_INSTANCE.getParserForType();
+    }
+
+    private void removeAds(int i) {
+        ensureAdsIsMutable();
+        this.ads_.remove(i);
+    }
+
+    private void setAds(int i, AdvertisementStruct$ChannelAdOrder advertisementStruct$ChannelAdOrder) {
+        advertisementStruct$ChannelAdOrder.getClass();
+        ensureAdsIsMutable();
+        this.ads_.set(i, advertisementStruct$ChannelAdOrder);
+    }
+
+    @Override // com.google.protobuf.GeneratedMessageLite
+    protected final Object dynamicMethod(GeneratedMessageLite.g gVar, Object obj, Object obj2) {
+        switch (AbstractC1840b.a[gVar.ordinal()]) {
+            case 1:
+                return new AdvertisementOuterClass$ResponseGetActiveChannelAds();
+            case 2:
+                return new a();
+            case 3:
+                return GeneratedMessageLite.newMessageInfo(DEFAULT_INSTANCE, "\u0000\u0001\u0000\u0000\u0001\u0001\u0001\u0000\u0001\u0000\u0001\u001b", new Object[]{"ads_", AdvertisementStruct$ChannelAdOrder.class});
+            case 4:
+                return DEFAULT_INSTANCE;
+            case 5:
+                KW4 cVar = PARSER;
+                if (cVar == null) {
+                    synchronized (AdvertisementOuterClass$ResponseGetActiveChannelAds.class) {
+                        try {
+                            cVar = PARSER;
+                            if (cVar == null) {
+                                cVar = new GeneratedMessageLite.c(DEFAULT_INSTANCE);
+                                PARSER = cVar;
+                            }
+                        } finally {
+                        }
+                    }
+                }
+                return cVar;
+            case 6:
+                return (byte) 1;
+            case 7:
+                return null;
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+
+    public AdvertisementStruct$ChannelAdOrder getAds(int i) {
+        return (AdvertisementStruct$ChannelAdOrder) this.ads_.get(i);
+    }
+
+    public int getAdsCount() {
+        return this.ads_.size();
+    }
+
+    public List<AdvertisementStruct$ChannelAdOrder> getAdsList() {
+        return this.ads_;
+    }
+
+    public InterfaceC3528Bg getAdsOrBuilder(int i) {
+        return (InterfaceC3528Bg) this.ads_.get(i);
+    }
+
+    public List<? extends InterfaceC3528Bg> getAdsOrBuilderList() {
+        return this.ads_;
+    }
+
+    public static a newBuilder(AdvertisementOuterClass$ResponseGetActiveChannelAds advertisementOuterClass$ResponseGetActiveChannelAds) {
+        return (a) DEFAULT_INSTANCE.createBuilder(advertisementOuterClass$ResponseGetActiveChannelAds);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseDelimitedFrom(InputStream inputStream, C2394s c2394s) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseDelimitedFrom(DEFAULT_INSTANCE, inputStream, c2394s);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(ByteBuffer byteBuffer, C2394s c2394s) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, byteBuffer, c2394s);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(AbstractC2383g abstractC2383g) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, abstractC2383g);
+    }
+
+    private void addAds(int i, AdvertisementStruct$ChannelAdOrder advertisementStruct$ChannelAdOrder) {
+        advertisementStruct$ChannelAdOrder.getClass();
+        ensureAdsIsMutable();
+        this.ads_.add(i, advertisementStruct$ChannelAdOrder);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(AbstractC2383g abstractC2383g, C2394s c2394s) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, abstractC2383g, c2394s);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(byte[] bArr) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, bArr);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(byte[] bArr, C2394s c2394s) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, bArr, c2394s);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(InputStream inputStream) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, inputStream);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(InputStream inputStream, C2394s c2394s) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, inputStream, c2394s);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(AbstractC2384h abstractC2384h) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, abstractC2384h);
+    }
+
+    public static AdvertisementOuterClass$ResponseGetActiveChannelAds parseFrom(AbstractC2384h abstractC2384h, C2394s c2394s) {
+        return (AdvertisementOuterClass$ResponseGetActiveChannelAds) GeneratedMessageLite.parseFrom(DEFAULT_INSTANCE, abstractC2384h, c2394s);
+    }
+}

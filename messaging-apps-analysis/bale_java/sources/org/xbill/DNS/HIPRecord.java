@@ -1,0 +1,150 @@
+package org.xbill.DNS;
+
+import android.gov.nist.core.Separators;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.xbill.DNS.DNSSEC;
+import org.xbill.DNS.Name;
+import org.xbill.DNS.Tokenizer;
+import org.xbill.DNS.utils.base16;
+import org.xbill.DNS.utils.base64;
+
+/* loaded from: classes8.dex */
+public class HIPRecord extends Record {
+    private byte[] hit;
+    private int pkAlgorithm;
+    private byte[] publicKey;
+    private final List<Name> rvServers;
+
+    HIPRecord() {
+        this.rvServers = new ArrayList();
+    }
+
+    private static int mapAlgTypeToDnssec(int i) throws DNSSEC.UnsupportedAlgorithmException {
+        if (i == 1) {
+            return 3;
+        }
+        if (i == 2) {
+            return 5;
+        }
+        throw new DNSSEC.UnsupportedAlgorithmException(i);
+    }
+
+    public int getAlgorithm() {
+        return this.pkAlgorithm;
+    }
+
+    public byte[] getHit() {
+        return this.hit;
+    }
+
+    public byte[] getKey() {
+        return this.publicKey;
+    }
+
+    public PublicKey getPublicKey() {
+        return DNSSEC.toPublicKey(mapAlgTypeToDnssec(this.pkAlgorithm), this.publicKey, this);
+    }
+
+    public List<Name> getRvServers() {
+        return Collections.unmodifiableList(this.rvServers);
+    }
+
+    @Override // org.xbill.DNS.Record
+    protected void rdataFromString(Tokenizer tokenizer, Name name) {
+        this.pkAlgorithm = tokenizer.getUInt8();
+        this.hit = tokenizer.getHexString();
+        this.publicKey = base64.fromString(tokenizer.getString());
+        while (true) {
+            Tokenizer.Token token = tokenizer.get();
+            if (!token.isString()) {
+                return;
+            } else {
+                this.rvServers.add(new Name(token.value()));
+            }
+        }
+    }
+
+    @Override // org.xbill.DNS.Record
+    protected void rrFromWire(DNSInput dNSInput) throws WireParseException {
+        int u8 = dNSInput.readU8();
+        this.pkAlgorithm = dNSInput.readU8();
+        int u16 = dNSInput.readU16();
+        this.hit = dNSInput.readByteArray(u8);
+        this.publicKey = dNSInput.readByteArray(u16);
+        while (dNSInput.remaining() > 0) {
+            this.rvServers.add(new Name(dNSInput));
+        }
+    }
+
+    @Override // org.xbill.DNS.Record
+    protected String rrToString() {
+        StringBuilder sb = new StringBuilder();
+        if (Options.multiline()) {
+            sb.append("( ");
+        }
+        String str = Options.multiline() ? "\n\t" : Separators.SP;
+        sb.append(this.pkAlgorithm);
+        sb.append(Separators.SP);
+        sb.append(base16.toString(this.hit));
+        sb.append(str);
+        sb.append(base64.toString(this.publicKey));
+        if (!this.rvServers.isEmpty()) {
+            sb.append(str);
+        }
+        sb.append((String) this.rvServers.stream().map(new Function() { // from class: ir.nasim.TS2
+            @Override // java.util.function.Function
+            public final Object apply(Object obj) {
+                return ((Name) obj).toString();
+            }
+        }).collect(Collectors.joining(str)));
+        if (Options.multiline()) {
+            sb.append(" )");
+        }
+        return sb.toString();
+    }
+
+    @Override // org.xbill.DNS.Record
+    protected void rrToWire(final DNSOutput dNSOutput, Compression compression, final boolean z) {
+        dNSOutput.writeU8(this.hit.length);
+        dNSOutput.writeU8(this.pkAlgorithm);
+        dNSOutput.writeU16(this.publicKey.length);
+        dNSOutput.writeByteArray(this.hit);
+        dNSOutput.writeByteArray(this.publicKey);
+        this.rvServers.forEach(new Consumer() { // from class: ir.nasim.US2
+            @Override // java.util.function.Consumer
+            public final void accept(Object obj) {
+                ((Name) obj).toWire(dNSOutput, null, z);
+            }
+        });
+    }
+
+    public HIPRecord(Name name, int i, long j, byte[] bArr, int i2, byte[] bArr2, List<Name> list) {
+        super(name, 55, i, j);
+        ArrayList arrayList = new ArrayList();
+        this.rvServers = arrayList;
+        this.hit = bArr;
+        this.pkAlgorithm = i2;
+        this.publicKey = bArr2;
+        if (list != null) {
+            arrayList.addAll(list);
+        }
+    }
+
+    public HIPRecord(Name name, int i, long j, byte[] bArr, int i2, byte[] bArr2) {
+        this(name, i, j, bArr, i2, bArr2, (List<Name>) null);
+    }
+
+    public HIPRecord(Name name, int i, long j, byte[] bArr, int i2, PublicKey publicKey, List<Name> list) {
+        this(name, i, j, bArr, i2, DNSSEC.fromPublicKey(publicKey, mapAlgTypeToDnssec(i2)), list);
+    }
+
+    public HIPRecord(Name name, int i, long j, byte[] bArr, int i2, PublicKey publicKey) {
+        this(name, i, j, bArr, i2, publicKey, (List<Name>) null);
+    }
+}

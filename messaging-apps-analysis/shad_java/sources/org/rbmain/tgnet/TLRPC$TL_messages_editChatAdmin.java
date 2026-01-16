@@ -1,0 +1,22 @@
+package org.rbmain.tgnet;
+
+/* loaded from: classes4.dex */
+public class TLRPC$TL_messages_editChatAdmin extends TLObject {
+    public static int constructor = -1444503762;
+    public int chat_id;
+    public boolean is_admin;
+    public TLRPC$InputUser user_id;
+
+    @Override // org.rbmain.tgnet.TLObject
+    public TLObject deserializeResponse(AbstractSerializedData abstractSerializedData, int i, boolean z) {
+        return TLRPC$Bool.TLdeserialize(abstractSerializedData, i, z);
+    }
+
+    @Override // org.rbmain.tgnet.TLObject
+    public void serializeToStream(AbstractSerializedData abstractSerializedData) {
+        abstractSerializedData.writeInt32(constructor);
+        abstractSerializedData.writeInt32(this.chat_id);
+        this.user_id.serializeToStream(abstractSerializedData);
+        abstractSerializedData.writeBool(this.is_admin);
+    }
+}
