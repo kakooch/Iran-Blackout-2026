@@ -401,13 +401,6 @@ MXB was mandated by Iranian regulators to ensure:
 2. Central visibility into messaging patterns
 3. Reduced dependence on foreign platforms (Telegram, WhatsApp)
 
-All seven participating apps are either state-owned or state-aligned:
-- **Bale:** Developed by Bank Mellat subsidiary
-- **Eitaa:** "National" messenger promoted by IRIB
-- **Soroush:** IRGC-affiliated
-- **Rubika:** MTN Irancell subsidiary
-- **IGap/Gap:** Private but domestically hosted
-
 ---
 
 ## Evidence Files
