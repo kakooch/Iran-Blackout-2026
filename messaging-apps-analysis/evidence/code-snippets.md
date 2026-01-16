@@ -565,10 +565,134 @@ public class CallOutSingleton {
 
 ---
 
+## Shad Code Evidence (Educational Platform - Student Data)
+
+### 1. Server Infrastructure
+
+**File:** `shad_java/sources/androidMessenger/utilites/AppFavorUtils.java`
+
+```java
+public class AppFavorUtils {
+    // Messenger servers (8 load-balanced)
+    public static final ArrayList<String> MESSENGER_URL_DEFAULT = new ArrayList<>(Arrays.asList(
+        "https://shadmessenger3.iranlms.ir",
+        "https://shadmessenger4.iranlms.ir",
+        "https://shadmessenger5.iranlms.ir",
+        "https://shadmessenger6.iranlms.ir",
+        "https://shadmessenger7.iranlms.ir",
+        "https://shadmessenger8.iranlms.ir",
+        "https://shadmessenger9.iranlms.ir",
+        "https://shadmessenger10.iranlms.ir"
+    ));
+
+    // Service endpoints
+    public static String GATEWAY_URL = "https://shservicesbase.iranlms.ir";
+    public static String iptvUrl = "https://shservices.iranlms.ir/";
+    public static String usageUrl = "https://shusage.iranlms.ir";      // Usage tracking
+    public static String paymentUrl = "https://shpaymentc.iranlms.ir/";
+    public static String gameUrl = "https://shqgame.iranlms.ir";
+
+    // Public URLs
+    public static String termsAndConditionsUrl = "https://shad.ir/rules";
+    public static String policyUrl = "https://shad.ir/policy";
+}
+```
+
+### 2. Video Call Protocol (WebRTC + SIP)
+
+**File:** `shad_java/sources/ir/aaap/messengercore/model/VoiceCallModels.java`
+
+```java
+public class VoiceCallModels {
+    public enum CallProtocolType {
+        CallOut,    // SIP-based external calls
+        WebRtc      // WebRTC for in-app calls
+    }
+
+    public enum ConnectionType {
+        Tg,         // Telegram protocol
+        WebRTC      // Standard WebRTC
+    }
+
+    public static class PhoneCall {
+        public boolean p2p_allowed = false;  // P2P DISABLED by default
+        public ArrayList<PhoneConnection> connections;
+    }
+
+    public static class PhoneConnection {
+        public String ip;
+        public String ipv6;
+        public int port = 27000;
+        public String turn_username;
+        public String turn_password;
+        public ConnectionType type;
+    }
+}
+```
+
+### 3. Emulator Detection
+
+**File:** `shad_java/sources/org/rbmain/messenger/EmuDetector.java`
+
+```java
+public class EmuDetector {
+    private static final String[] GENY_FILES = {
+        "/dev/socket/genyd", "/dev/socket/baseband_genyd"
+    };
+    private static final String[] NOX_FILES = {
+        "fstab.nox", "init.nox.rc", "ueventd.nox.rc",
+        "/BigNoxGameHD", "/YSLauncher"
+    };
+    private static final String[] BLUE_FILES = {
+        "/Android/data/com.bluestacks.home",
+        "/Android/data/com.bluestacks.settings"
+    };
+    private static final String[] DEVICE_IDS = {
+        "000000000000000", "e21833235b6eef10", "012345678912345"
+    };
+
+    public boolean detect() {
+        return checkBasic() || checkAdvanced() || checkPackageName() ||
+               EmuInputDevicesDetector.detect();
+    }
+}
+```
+
+### 4. Contact Syncing (Default Enabled)
+
+**File:** `shad_java/sources/org/rbmain/ui/LoginActivityAppp.java`
+
+```java
+public class LoginActivityAppp extends BaseFragment {
+    private boolean syncContacts = true;  // ENABLED BY DEFAULT
+
+    // On login completion
+    UserConfig.getInstance(this.currentAccount).syncContacts = this.syncContacts;
+}
+```
+
+### 5. Firebase Crashlytics
+
+**File:** `shad_java/sources/ir/resaneh1/iptv/activity/MainTabFragment.java`
+
+```java
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
+public class MainTabFragment {
+    public void sendFirebaseEvents(Context context, int position) {
+        FirebaseEventSender.sendEventNew(context, "TabSelected " + getTabName(position), "");
+        FirebaseCrashlytics.getInstance().setCustomKey("MainTabOnTabSelected " + position, getTabName(position));
+    }
+}
+```
+
+---
+
 ## Checksums
 
 ```
 SHA-256 of source APKs:
 26786339f1844f0347f77954ecf1fc64ead6b50e2cd370471ad2a7960617a6c0  bale.apk
 f9dcd28ddb923d85e44c7f9ef7dec011763a7985e23e877da34feda7d27994c9  eitaa.apk
+ade8d0d4511caa63f0d62075e99e39126b5a907a01986ee5575c82dc5748a384  shad.apk
 ```

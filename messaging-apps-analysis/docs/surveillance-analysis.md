@@ -8,7 +8,9 @@
 
 ## Executive Summary
 
-Both Bale and Eitaa contain code patterns indicative of extensive user monitoring capabilities. This analysis documents device fingerprinting, data collection, analytics integration, and anti-analysis features found in the decompiled source code.
+Bale, Eitaa, and Shad all contain code patterns indicative of extensive user monitoring capabilities. This analysis documents device fingerprinting, data collection, analytics integration, and anti-analysis features found in the decompiled source code.
+
+**Shad is particularly concerning** as it targets 34 million users, primarily K-12 students (minors).
 
 ---
 
@@ -271,6 +273,82 @@ public class RootDetector {
 
 ---
 
+## Shad Surveillance Indicators (STUDENT DATA)
+
+### Critical: User Base Includes Minors
+
+Shad's 34 million users are primarily K-12 students, teachers, and school administrators. Data collection on minors raises significant concerns.
+
+### 1. Emulator Detection (Anti-Analysis)
+
+**File:** `org/rbmain/messenger/EmuDetector.java`
+
+Identical to Eitaa's implementation:
+
+```java
+private static final String[] GENY_FILES = {"/dev/socket/genyd", "/dev/socket/baseband_genyd"};
+private static final String[] NOX_FILES = {"fstab.nox", "init.nox.rc", ...};
+private static final String[] BLUE_FILES = {"/Android/data/com.bluestacks.home", ...};
+private static final String[] DEVICE_IDS = {"000000000000000", "e21833235b6eef10", ...};
+
+public boolean detect() {
+    return checkBasic() || checkAdvanced() || checkPackageName() ||
+           EmuInputDevicesDetector.detect();
+}
+```
+
+**Purpose:** Detect security researchers analyzing the app.
+
+### 2. Firebase Crashlytics
+
+**Files:** Multiple files in `ir/resaneh1/iptv/`
+
+```java
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
+FirebaseCrashlytics.getInstance().recordException(e);
+FirebaseCrashlytics.getInstance().setCustomKey("MainTabOnTabSelected", tabName);
+```
+
+**Data Collected:**
+- Exception stack traces
+- User navigation patterns
+- Tab selections and feature usage
+- Device information
+
+### 3. Contact Syncing (Default Enabled)
+
+**File:** `org/rbmain/ui/LoginActivityAppp.java`
+
+```java
+private boolean syncContacts = true;  // Enabled by default
+
+UserConfig.getInstance(this.currentAccount).syncContacts = this.syncContacts;
+```
+
+**Implication:** Students' contact lists are synced to government servers by default.
+
+### 4. Usage Tracking Endpoint
+
+**File:** `androidMessenger/utilites/AppFavorUtils.java`
+
+```java
+public static String usageUrl = "https://shusage.iranlms.ir";
+```
+
+Dedicated endpoint for tracking student usage patterns.
+
+### 5. Permissions on Student Devices
+
+- READ_CONTACTS (contact harvesting)
+- READ_PHONE_STATE (device identification)
+- ACCESS_FINE_LOCATION (location tracking)
+- CAMERA (video classes)
+- RECORD_AUDIO (audio classes)
+- READ/WRITE_EXTERNAL_STORAGE (file access)
+
+---
+
 ## Data Exfiltration Endpoints
 
 ### Eitaa Servers
@@ -289,6 +367,15 @@ public class RootDetector {
 | Sentry servers | Error tracking |
 | Firebase (Google) | Push notifications, remote config |
 | `api.bale.ai` | Main API |
+
+### Shad Servers
+
+| Endpoint | Purpose |
+|----------|---------|
+| Firebase Crashlytics (Google) | Crash reports, user behavior |
+| `shusage.iranlms.ir` | Usage tracking |
+| `shadmessenger*.iranlms.ir` | Messenger API (8 servers) |
+| `shservices.iranlms.ir` | General services |
 
 ---
 
@@ -328,13 +415,14 @@ Firebase integration allows server-initiated actions without user interaction.
 
 ## Comparison with Standard Practices
 
-| Practice | Industry Standard | Eitaa | Bale |
-|----------|------------------|-------|------|
-| Crash reporting | Anonymous device ID | IMEI (Hardware ID) | Device Serial |
-| Analytics | Opt-in, anonymized | Always-on | Always-on |
-| Contact access | On-demand | Persistent observer | Persistent observer |
-| Emulator detection | Rare (games) | Yes | Yes |
-| Root detection | Banking apps | Yes | Yes |
+| Practice | Industry Standard | Eitaa | Bale | Shad |
+|----------|------------------|-------|------|------|
+| Crash reporting | Anonymous device ID | IMEI (Hardware ID) | Device Serial | Firebase |
+| Analytics | Opt-in, anonymized | Always-on | Always-on | Always-on |
+| Contact access | On-demand | Persistent observer | Persistent observer | Default enabled |
+| Emulator detection | Rare (games) | Yes | Yes | Yes |
+| Root detection | Banking apps | Yes | Yes | No |
+| User base | Adults | Adults | Adults | **Minors (students)** |
 
 ---
 

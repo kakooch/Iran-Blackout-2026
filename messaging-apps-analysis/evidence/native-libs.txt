@@ -47,21 +47,54 @@ libmsaaudio.so                          23,880 bytes   Android audio interface
 
 
 ================================================================================
+SHAD MESSENGER (ir.medu.shad) - Educational Platform
+================================================================================
+
+lib/arm64-v8a/
+--------------------------------------------------------------------------------
+libtmessages.38.so              [size varies]   Telegram-derived messaging + WebRTC
+
+lib/armeabi-v7a/
+--------------------------------------------------------------------------------
+libtmessages.38.so              [size varies]   Telegram-derived messaging + WebRTC
+
+lib/x86_64/
+--------------------------------------------------------------------------------
+libtmessages.38.so              [size varies]   Telegram-derived messaging + WebRTC
+
+lib/x86/
+--------------------------------------------------------------------------------
+libtmessages.38.so              [size varies]   Telegram-derived messaging + WebRTC
+
+Note: Shad includes only the Telegram-derived library with bundled WebRTC.
+Unlike Bale (LiveKit) or Eitaa (Linphone), no separate call stack library.
+
+
+================================================================================
 ANALYSIS NOTES
 ================================================================================
 
 BALE:
 - Primary call library: liblkjingle_peerconnection_so.so (LiveKit WebRTC)
 - LiveKit is a commercial WebRTC SFU platform
-- Telegram derivation evident in libtmessages naming
+- Telegram derivation evident in libtmessages naming (v45)
 
 EITAA:
 - Primary call library: liblinphone.so (SIP-based VoIP)
 - Full Linphone SDK stack present (mediastreamer, ortp, srtp2)
 - Significantly larger Telegram-derived component (20MB vs 5.8MB)
+- Telegram version: v40
 - WebRTC modules (libmswebrtc.so) used within Linphone stack
 
+SHAD:
+- Only Telegram-derived library present (libtmessages.38.so)
+- Oldest Telegram version of the three (v38)
+- WebRTC implementation bundled within libtmessages
+- Supports 4 architectures (arm64, armeabi-v7a, x86_64, x86)
+- Hybrid WebRTC + SIP CallOut capability
+
 COMMON:
-- Both derived from Telegram source code
-- Both use centralized server architectures
-- Neither implements pure P2P calling
+- All three derived from Telegram source code
+- All three use centralized server architectures
+- None implements pure P2P calling
+- All three have emulator/root detection
